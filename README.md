@@ -1,5 +1,3 @@
-<h1>dnd-12th-6-backend</h1>
-
 <div class="markdown-heading" dir="auto">
   <h1 tabindex="-1" class="heading-element" dir="auto">dnd-12th-6-backend</h1>
   <a id="user-content-dnd-12th-5-backend" class="anchor" aria-label="Permalink: dnd-12th-6-backend" href="#dnd-12th-5-backend">
