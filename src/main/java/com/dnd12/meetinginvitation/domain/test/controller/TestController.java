@@ -23,7 +23,7 @@ public class TestController {
         return ResponseEntity.ok(createTest);
     }
 
-    @GetMapping
+    @GetMapping("/showAll")
     public ResponseEntity<List<TestEntity>> getAllTest(){
         List<TestEntity> tests = testService.getAllTest();
         return ResponseEntity.ok(tests);
