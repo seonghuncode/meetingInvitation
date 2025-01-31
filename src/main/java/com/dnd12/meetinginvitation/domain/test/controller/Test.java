@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class Test {
 
-    //http://localhost:8080/test
-    @RequestMapping("/test")
+    //http://localhost:8080/test1
+    @RequestMapping("/test1")
     @ResponseBody
     public String test() {
         return "test";

@@ -49,4 +49,18 @@ build
 *.iml
 
 # 설정 파일 제외
-application.properties
+#application.properties
+.env
+*.env
+
+#AWS관련 보안 파일
+.aws/
+*.pem
+*.key
+credentials
+config
+
+#Docker관련
+#Dockerfile
+#docker-compose.yml
+#.dockerignore
