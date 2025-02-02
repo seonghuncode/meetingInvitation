@@ -39,11 +39,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     implementation group: 'io.github.cdimascio', name: 'dotenv-java', version: '3.0.0'
-
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.2' // swagger
+    implementation 'org.springframework.boot:spring-boot-devtools'//리소스 변경시 자동 재시작
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-
     //카카오톡 로그인
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
