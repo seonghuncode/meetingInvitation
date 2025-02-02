@@ -3,34 +3,33 @@ version: '3.8'
 
 services:
   app:
-#    image: 'meetinginvitationsimg1:latest'
+    image: 'meetinginvitationsimg1:latest'
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/meetingInvitation -> docker에 설치한 db사용시
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:${DB_PORT}/${DB_NAME}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${DB_NAME} -> docker에 설치한 db사용시
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-#    depends_on:
-#      - postgres-db
+    depends_on:
+      - postgres-db
 
 
 # 기존 PostgreSQL을 사용하지 않고 새로운 컨테이너에 PostgreSQL을 설치해서 사용할 경우
-#  postgres-db:
-#    image: postgres:latest
-#    container_name: postgres-db
-#    environment:
-#      POSTGRES_USER: ${DB_USER}
-#      POSTGRES_PASSWORD: ${DB_PASSWORD}
-#      POSTGRES_DB: ${DB_NAME}
-#    ports:
-#      - "5432:5432"
-#    volumes:
-#      - postgres-data:/var/lib/postgresql/data
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
 
 volumes:
   postgres-data:
-    external: true #볼륨을 외부에서 유지(초기화 방지), DB가 Docker외부에 있을 경우
+#    external: true #볼륨을 외부에서 유지(초기화 방지), DB가 Docker외부에 있을 경우
