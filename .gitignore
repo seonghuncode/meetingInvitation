@@ -52,6 +52,7 @@ build
 #application.properties
 .env
 *.env
+DB
 
 #AWS관련 보안 파일
 .aws/
