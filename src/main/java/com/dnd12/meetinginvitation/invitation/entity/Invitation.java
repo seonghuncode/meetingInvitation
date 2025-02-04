@@ -39,7 +39,7 @@ public class Invitation {
 
     @Column(nullable = false)
     private String state;
-
+     
     private String link;
 
     private String invitationTemplate_url;
