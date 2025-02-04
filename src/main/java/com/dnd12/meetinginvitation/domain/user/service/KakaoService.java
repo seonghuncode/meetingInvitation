@@ -1,5 +1,6 @@
-package com.dnd12.meetinginvitation.service;
+package com.dnd12.meetinginvitation.domain.user.service;
 
+import com.dnd12.meetinginvitation.domain.user.dto.KakaoTokenResponseDto;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
