@@ -1,7 +1,7 @@
-package com.dnd12.meetinginvitation.domain.user.controller;
+package com.dnd12.meetinginvitation.user.controller;
 
-import com.dnd12.meetinginvitation.domain.user.service.KakaoService;
-import com.dnd12.meetinginvitation.domain.user.dto.KakaoTokenResponseDto;
+import com.dnd12.meetinginvitation.user.service.KakaoService;
+import com.dnd12.meetinginvitation.user.dto.KakaoTokenResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

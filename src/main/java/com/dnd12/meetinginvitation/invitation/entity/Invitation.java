@@ -1,6 +1,6 @@
-package com.dnd12.meetinginvitation.domain.invitation.entity;
+package com.dnd12.meetinginvitation.invitation.entity;
 
-import com.dnd12.meetinginvitation.domain.user.entity.User;
+import com.dnd12.meetinginvitation.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,11 +39,10 @@ public class Invitation {
 
     @Column(nullable = false)
     private String state;
-
+     
     private String link;
 
-    @Lob
-    private byte[] invitationTemplate;
+    private String invitationTemplate_url;
 
     private String invitationType;
 }
