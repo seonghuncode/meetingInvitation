@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.domain.invitation.entity;
+package com.dnd12.meetinginvitation.invitation.entity;
 
 import com.dnd12.meetinginvitation.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -42,8 +42,7 @@ public class Invitation {
 
     private String link;
 
-    @Lob
-    private byte[] invitationTemplate;
+    private String invitationTemplate_url;
 
     private String invitationType;
 }
