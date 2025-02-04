@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.domain.user.dto;
+package com.dnd12.meetinginvitation.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

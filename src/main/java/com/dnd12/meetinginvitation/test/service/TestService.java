@@ -1,7 +1,7 @@
-package com.dnd12.meetinginvitation.domain.test.service;
+package com.dnd12.meetinginvitation.test.service;
 
-import com.dnd12.meetinginvitation.domain.test.entity.TestEntity;
-import com.dnd12.meetinginvitation.domain.test.repository.TestRepository;
+import com.dnd12.meetinginvitation.test.entity.TestEntity;
+import com.dnd12.meetinginvitation.test.repository.TestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

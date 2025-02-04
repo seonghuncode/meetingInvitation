@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.domain.test.controller;
+package com.dnd12.meetinginvitation.test.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

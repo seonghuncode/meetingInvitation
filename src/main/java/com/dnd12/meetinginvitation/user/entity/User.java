@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.domain.user.entity;
+package com.dnd12.meetinginvitation.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
