@@ -1,8 +1,12 @@
 package com.dnd12.meetinginvitation.user.controller;
 
+import com.dnd12.meetinginvitation.user.dto.KakaoUserInfoDto;
+import com.dnd12.meetinginvitation.user.dto.LoginResponse;
 import com.dnd12.meetinginvitation.user.service.KakaoService;
 import com.dnd12.meetinginvitation.user.dto.KakaoTokenResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,14 +17,17 @@ public class KakaoLoginController {
 
     private final KakaoService kakaoService;
 
-    //    @GetMapping("/kakao_login")
+//    @GetMapping("/kakao_login")
 //    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
 //        String accessToken = kakaoService.getAccessTokenFromKakao(code);
+//
+//        KakaoUserInfoDto userInfo = kakaoService.getUserInfo(accessToken);
+//
 //        return new ResponseEntity<>(HttpStatus.OK);
 //    }
     @GetMapping("/kakao_login")
-    public KakaoTokenResponseDto kakaoLogin(@RequestParam("code") String code) {
-        KakaoTokenResponseDto accessToken = kakaoService.getAccessTokenFromKakao(code);
-        return accessToken;
+    public LoginResponse kakaoLogin(@RequestParam("code") String code) {
+        LoginResponse loginResponse = kakaoService.handleKakaoLogin(code);
+        return loginResponse;
     }
 }
