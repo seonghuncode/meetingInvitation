@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long kakaoId;
 
     @Column(nullable = false)
     private String name;
@@ -24,8 +23,10 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Lob
-    private byte[] profileImage;
+//    @Lob
+    private String profileImage;
+
+//    private String thumbnailImage;
 
     private LocalDateTime createdAt;
 
