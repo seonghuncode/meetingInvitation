@@ -45,4 +45,6 @@ public class Invitation {
     private String invitationTemplate_url;
 
     private String invitationType;
+
+
 }
