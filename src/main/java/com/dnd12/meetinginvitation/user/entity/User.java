@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    private Long kakaoId;
+    private Long Id; //kakaoId
 
     @Column(nullable = false)
     private String name;

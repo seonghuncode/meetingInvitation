@@ -52,7 +52,7 @@ public class KakaoService {
         } else {
             user = User.builder()
                     .email(userInfo.kakaoAccount.getEmail())
-                    .kakaoId(userInfo.getId())
+                    .Id(userInfo.getId())
                     .name(userInfo.kakaoAccount.profile.getNickName())
                     .profileImage(userInfo.kakaoAccount.profile.getProfileImageUrl())
 //                    .profileImage(userInfo.kakaoAccount.profile.getThumbnailImageUrl())
