@@ -1,5 +1,6 @@
 package com.dnd12.meetinginvitation.user.controller;
 
+import com.dnd12.meetinginvitation.common.ApiResponse;
 import com.dnd12.meetinginvitation.user.dto.KakaoUserInfoDto;
 import com.dnd12.meetinginvitation.user.dto.LoginResponse;
 import com.dnd12.meetinginvitation.user.service.KakaoService;
@@ -18,16 +19,14 @@ public class KakaoLoginController {
     private final KakaoService kakaoService;
 
 //    @GetMapping("/kakao_login")
-//    public ResponseEntity<?> kakaoLogin(@RequestParam("code") String code) {
-//        String accessToken = kakaoService.getAccessTokenFromKakao(code);
-//
-//        KakaoUserInfoDto userInfo = kakaoService.getUserInfo(accessToken);
-//
-//        return new ResponseEntity<>(HttpStatus.OK);
+//    public LoginResponse kakaoLogin(@RequestParam("code") String code) {
+//        LoginResponse loginResponse = kakaoService.handleKakaoLogin(code);
+//        return loginResponse;
 //    }
+
     @GetMapping("/kakao_login")
-    public LoginResponse kakaoLogin(@RequestParam("code") String code) {
+    public ResponseEntity<ApiResponse<LoginResponse>> kakaoLogin(@RequestParam("code") String code) {
         LoginResponse loginResponse = kakaoService.handleKakaoLogin(code);
-        return loginResponse;
+        return ResponseEntity.ok(ApiResponse.success(loginResponse));
     }
 }

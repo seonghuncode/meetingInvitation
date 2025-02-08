@@ -4,12 +4,14 @@ import com.dnd12.meetinginvitation.invitation.entity.Invitation;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Table(name = "attendance")
 public class Attendance {
 
@@ -31,5 +33,24 @@ public class Attendance {
     private String password;
 
     @ElementCollection
-    private java.util.List<String> messages;
+    private List<String> messages = new ArrayList<>();
+
+    @Builder
+    public Attendance(Invitation invitation, String state, String name, String password, String message) {
+
+        this.invitation = invitation;
+        this.state = state;
+        this.name = name;
+        this.password = password;
+        if (message != null && !message.trim().isEmpty()) {
+            this.messages.add(message);
+        }
+    }
+
+    // 메시지 추가 메서드
+    public void addMessage(String message) {
+        if (message != null && !message.trim().isEmpty()) {
+            this.messages.add(message);
+        }
+    }
 }
