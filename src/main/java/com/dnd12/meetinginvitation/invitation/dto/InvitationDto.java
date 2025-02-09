@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +23,8 @@ public class InvitationDto {
     private String description;
     private String state;
     private String link;
-    private MultipartFile invitationTemplate;
+    //private MultipartFile invitationTemplate;
+    private String imageData;
     private String invitationTemplate_url;
     private String invitationType;
 
