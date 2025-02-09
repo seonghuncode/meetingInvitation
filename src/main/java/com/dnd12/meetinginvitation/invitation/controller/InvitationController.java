@@ -4,18 +4,20 @@ import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.service.FileStorageService;
 import com.dnd12.meetinginvitation.invitation.service.InvitationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+@Slf4j
 @RestController
 public class InvitationController {
 
@@ -26,7 +28,10 @@ public class InvitationController {
     private FileStorageService fileStorageService;
 
     @RequestMapping(value = "/makeInvitation", method = RequestMethod.PUT)
-    public ResponseEntity<ResponseDto> makeInvitation(@ModelAttribute InvitationDto invitationDto){
+    public ResponseEntity<ResponseDto> makeInvitation(@ModelAttribute InvitationDto invitationDto, @AuthenticationPrincipal String email){
+        log.info("유저:{}", invitationDto.getCreator_id());
+        log.info("장소:{}", invitationDto.getPlace());
+        log.info("상태:{}", invitationDto.getState());
         return invitationService.makeInvitation(invitationDto);
     }
 
