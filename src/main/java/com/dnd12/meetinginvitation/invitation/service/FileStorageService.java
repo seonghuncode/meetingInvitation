@@ -1,14 +1,12 @@
 package com.dnd12.meetinginvitation.invitation.service;
 
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -27,9 +25,22 @@ public class FileStorageService {
         }
     }
 
-    public String saveFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
+    public String saveBase64File(String base64Data) throws IOException{
+        if (base64Data == null || base64Data.isEmpty()) {
             return null;
+        }
+
+        // Base64 문자열에서 파일 확장자 추출 (예: data:image/png;base64,... 형태일 경우)
+        String extension = ".jpg"; // 기본 확장자 설정
+        if (base64Data.startsWith("data:image/png;base64,")) {
+            extension = ".png";
+            base64Data = base64Data.replace("data:image/png;base64,", "");
+        } else if (base64Data.startsWith("data:image/jpeg;base64,")) {
+            extension = ".jpg";
+            base64Data = base64Data.replace("data:image/jpeg;base64,", "");
+        } else if (base64Data.startsWith("data:image/gif;base64,")) {
+            extension = ".gif";
+            base64Data = base64Data.replace("data:image/gif;base64,", "");
         }
 
         // 폴더가 존재하지 않으면 생성
@@ -39,30 +50,18 @@ public class FileStorageService {
         }
 
         // 고유한 파일명 생성 (UUID 사용)
-        String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
         String newFileName = UUID.randomUUID().toString() + extension;
-
-        // 파일 저장
         String filePath = Paths.get(UPLOAD_DIR, newFileName).toString();
-        file.transferTo(new File(filePath));
 
-        // 저장된 이미지 URL 반환
-        //return "/uploads/" + newFileName;
-        return newFileName;
+        // Base64 디코딩 후 파일로 저장
+        byte[] imageBytes = Base64.getDecoder().decode(base64Data);
+        try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            fos.write(imageBytes);
+        }
+
+        return newFileName; // 저장된 파일명 반환
     }
 
-    // 파일을 MultipartFile로 변환하는 메서드
-    public MultipartFile loadFileAsMultipartFile(String fileName) throws IOException {
-        // 파일 경로로부터 파일을 읽음
-        //Path filePath = Paths.get(UPLOAD_DIR).resolve(fileName).normalize();
-        //filePath = Path.of(Paths.get(UPLOAD_DIR) + "/e5c05854-da8a-401c-a303-dc14aaac0913.png");
-        Path filePath = Path.of(Paths.get(UPLOAD_DIR) + "/" + fileName);
-        File file = filePath.toFile();
-
-        // InputStream을 이용해 MockMultipartFile로 변환
-        return new MockMultipartFile(file.getName(), new FileInputStream(file));
-    }
 
     // 저장된 경로 반환
     public String getUploadDir() {
