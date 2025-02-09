@@ -4,6 +4,9 @@ package com.dnd12.meetinginvitation.invitation.service;
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.entity.Invitation;
+import com.dnd12.meetinginvitation.invitation.entity.InvitationParticipant;
+import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
+import com.dnd12.meetinginvitation.invitation.repository.InvitationParticipantRepository;
 import com.dnd12.meetinginvitation.invitation.repository.InvitationRepository;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
@@ -32,6 +35,8 @@ public class InvitationService {
     private UserRepository userRepository;
     @Autowired
     private FileStorageService fileStorageService;
+    @Autowired
+    private InvitationParticipantRepository invitationParticipantRepository;
 
     //초대장 생성
     public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto){
@@ -60,10 +65,31 @@ public class InvitationService {
                     .state(invitationDto.getState())
                     .link(invitationDto.getLink())
                     .invitationTemplate_url(fileUrl)
-                    .invitationType(invitationDto.getInvitationType())
                     .build();
 
+            //초대장 저장
             invitationRepository.save(invitation);
+
+           /* InvitationType invitationType = InvitationType.ERROR;
+            if(InvitationType.INVITED.equals("INVITED")){
+                invitationType = InvitationType.INVITED;
+            }else if(InvitationType.CREATOR.equals("CREATOR")){
+                invitationType = InvitationType.INVITED;
+            }else{
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ResponseDto.fail("Fail: The invitationType must be CREATOR or INVITED."));
+            }*/
+
+            //초대장 생성시 invitationType은 항상 CREATOR (초대장을 누군가에게 전송할 경우 INVITED로 변경해서 전송)
+            InvitationParticipant creatorParticipant = InvitationParticipant.builder()
+                    .invitation(invitation)
+                    .user(user)
+                    .invitationType(InvitationType.CREATOR)
+                    .build();
+            //초대장 타입 저장
+            invitationParticipantRepository.save(creatorParticipant);
+
+
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 
         }catch (Exception e){
@@ -94,6 +120,7 @@ public class InvitationService {
             
             invitationList.add(new InvitationDto(
                     invitation.getUser().getId(),
+                    invitation.getId(),
                     invitation.getCreatedAt(),
                     invitation.getUpdatedAt(),
                     invitation.getPlace(),
@@ -105,8 +132,7 @@ public class InvitationService {
                     invitation.getLink(),
                     //invitationTemplate,
                     null,
-                    invitation.getInvitationTemplate_url(),
-                    invitation.getInvitationType()
+                    invitation.getInvitationTemplate_url()
             ));
 
         }
