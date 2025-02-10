@@ -53,6 +53,8 @@ build
 .env
 *.env
 DB
+keystore.p12
+
 
 #AWS관련 보안 파일
 .aws/
