@@ -10,4 +10,6 @@ public class LoginResponse {
     //    private boolean isNewUser; //신규 회원인지
     private String email;
     private String name;
+    private Long userId;
+    private String profileImageUrl;
 }

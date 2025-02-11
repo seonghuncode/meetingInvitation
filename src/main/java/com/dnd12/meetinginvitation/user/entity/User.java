@@ -24,7 +24,7 @@ public class User {
     private String email;
 
 //    @Lob
-    private String profileImage;
+    private String profileImageUrl;
 
 //    private String thumbnailImage;
 
