@@ -8,9 +8,9 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8999:8999"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${DB_NAME} -> docker에 설치한 db사용시
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${DB_NAME} # -> docker에 설치한 db사용시
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
     depends_on:

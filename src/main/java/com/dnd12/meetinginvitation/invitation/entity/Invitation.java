@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -18,6 +20,9 @@ public class Invitation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToMany(mappedBy = "invitation", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<InvitationParticipant> participants = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
@@ -43,8 +48,6 @@ public class Invitation {
     private String link;
 
     private String invitationTemplate_url;
-
-    private String invitationType;
 
 
 }

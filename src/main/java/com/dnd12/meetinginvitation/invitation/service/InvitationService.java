@@ -4,16 +4,19 @@ package com.dnd12.meetinginvitation.invitation.service;
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.entity.Invitation;
+import com.dnd12.meetinginvitation.invitation.entity.InvitationParticipant;
+import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
+import com.dnd12.meetinginvitation.invitation.repository.InvitationParticipantRepository;
 import com.dnd12.meetinginvitation.invitation.repository.InvitationRepository;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -32,15 +35,11 @@ public class InvitationService {
     private UserRepository userRepository;
     @Autowired
     private FileStorageService fileStorageService;
+    @Autowired
+    private InvitationParticipantRepository invitationParticipantRepository;
 
     //초대장 생성
     public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto){
-        log.info("서비스 진입");
-        log.info("유저:{}", invitationDto.getCreator_id());
-        log.info("장소:{}", invitationDto.getPlace());
-        log.info("상태:{}", invitationDto.getState());
-        log.info("DTO:{}", invitationDto);
-
 
         try {
             log.info("유저 조회");
@@ -52,13 +51,8 @@ public class InvitationService {
             log.info("유저 조회 끝");
 
             //파일 저장 처리
-            String fileUrl = null;
-            MultipartFile file = invitationDto.getInvitationTemplate();
-            if(file != null && !file.isEmpty()){
-                //ip주소는 제외하고 저장 -> 도메인이나 고정IP를 사용하지 않기 때문
-                //프론트에서 http://IP주소:PORT/fileUrl형태로 사용
-                fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveFile(file);
-            }
+            // 이미지 Base64 디코딩 및 저장
+            String fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getImageData());
 
             Invitation invitation = Invitation.builder()
                     .user(user)
@@ -71,10 +65,31 @@ public class InvitationService {
                     .state(invitationDto.getState())
                     .link(invitationDto.getLink())
                     .invitationTemplate_url(fileUrl)
-                    .invitationType(invitationDto.getInvitationType())
                     .build();
 
+            //초대장 저장
             invitationRepository.save(invitation);
+
+           /* InvitationType invitationType = InvitationType.ERROR;
+            if(InvitationType.INVITED.equals("INVITED")){
+                invitationType = InvitationType.INVITED;
+            }else if(InvitationType.CREATOR.equals("CREATOR")){
+                invitationType = InvitationType.INVITED;
+            }else{
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(ResponseDto.fail("Fail: The invitationType must be CREATOR or INVITED."));
+            }*/
+
+            //초대장 생성시 invitationType은 항상 CREATOR (초대장을 누군가에게 전송할 경우 INVITED로 변경해서 전송)
+            InvitationParticipant creatorParticipant = InvitationParticipant.builder()
+                    .invitation(invitation)
+                    .user(user)
+                    .invitationType(InvitationType.CREATOR)
+                    .build();
+            //초대장 타입 저장
+            invitationParticipantRepository.save(creatorParticipant);
+
+
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 
         }catch (Exception e){
@@ -105,6 +120,7 @@ public class InvitationService {
             
             invitationList.add(new InvitationDto(
                     invitation.getUser().getId(),
+                    invitation.getId(),
                     invitation.getCreatedAt(),
                     invitation.getUpdatedAt(),
                     invitation.getPlace(),
@@ -116,8 +132,7 @@ public class InvitationService {
                     invitation.getLink(),
                     //invitationTemplate,
                     null,
-                    invitation.getInvitationTemplate_url(),
-                    invitation.getInvitationType()
+                    invitation.getInvitationTemplate_url()
             ));
 
         }
@@ -155,22 +170,12 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
         invitation.setLink(invitationDto.getLink());
     }
 
-    //파일 저장 처리
     String fileUrl = null;
-    MultipartFile file = invitationDto.getInvitationTemplate();
-    if(file != null && !file.isEmpty()){
-        //ip주소는 제외하고 저장 -> 도메인이나 고정IP를 사용하지 않기 때문
-        //프론트에서 http://IP주소:PORT/fileUrl형태로 사용
-        try {
-            fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveFile(file);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ResponseDto.fail(e.getMessage()));
-        }
-    }
-
-    if(invitationDto.getInvitationTemplate() != null){
+    try {
+        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getImageData());
         invitation.setInvitationTemplate_url(fileUrl);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
     }
 
     invitation.setUpdatedAt(LocalDateTime.now());
@@ -191,7 +196,28 @@ public ResponseEntity<ResponseDto> deleteInvitation(Long invitationId){
     return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 }
 
+    public String getFileExtension(String fileName) {
+        int index = fileName.lastIndexOf('.');
+        return index > 0 ? fileName.substring(index + 1) : "";
+    }
 
+    public MediaType getMediaTypeForFileExtension(String fileExtension) {
+        switch (fileExtension) {
+            case "png":
+                return MediaType.IMAGE_PNG;
+            case "jpg":
+            case "jpeg":
+                return MediaType.IMAGE_JPEG;
+            case "gif":
+                return MediaType.IMAGE_GIF;
+            case "bmp":
+                return MediaType.valueOf("image/bmp");
+            case "webp":
+                return MediaType.valueOf("image/webp");
+            default:
+                return MediaType.APPLICATION_OCTET_STREAM; // 기본값은 일반적인 바이너리 파일
+        }
+    }
 
 
 

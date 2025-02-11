@@ -11,12 +11,12 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 @Slf4j
 @RestController
 public class InvitationController {
@@ -27,19 +27,19 @@ public class InvitationController {
     @Autowired
     private FileStorageService fileStorageService;
 
-    @RequestMapping(value = "/makeInvitation", method = RequestMethod.PUT)
-    public ResponseEntity<ResponseDto> makeInvitation(@ModelAttribute InvitationDto invitationDto, @AuthenticationPrincipal String email){
-        log.info("유저:{}", invitationDto.getCreator_id());
-        log.info("장소:{}", invitationDto.getPlace());
-        log.info("상태:{}", invitationDto.getState());
+    //초대장 생성 (JSON)
+    @RequestMapping(value = "/invitation", method = RequestMethod.POST)
+    public ResponseEntity<ResponseDto> makeInvitation(@RequestBody InvitationDto invitationDto){
         return invitationService.makeInvitation(invitationDto);
     }
 
-    @RequestMapping(value = "/getInvitationAllList", method = RequestMethod.GET)
+    //초대장 전체 조회 (Form-Data)
+    @RequestMapping(value = "/invitations", method = RequestMethod.GET)
     public ResponseEntity<ResponseDto> getInvitationAllList(@RequestParam("userId") Long userId){
         return invitationService.getInvitationAllList(userId);
     }
 
+    //초대장 이미지 요청(썸네일)
     @RequestMapping(value = "/getInvitationImage", method = RequestMethod.GET)
     public ResponseEntity<Resource> getInvitationImage(@RequestParam("fileName") String fileName){
         try {
@@ -47,9 +47,14 @@ public class InvitationController {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
+                // 파일 확장자 추출
+                String fileExtension = invitationService.getFileExtension(fileName).toLowerCase();
+                MediaType mediaType = invitationService.getMediaTypeForFileExtension(fileExtension);
+
                 return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG) // 이미지 MIME 타입 지정
+                        .contentType(mediaType) // 동적으로 설정된 MIME 타입
                         .body(resource);
+
             } else {
                 return ResponseEntity.notFound().build();
             }
@@ -58,16 +63,18 @@ public class InvitationController {
         }
     }
 
-
-    @RequestMapping(value = "/modifyInvitation", method = RequestMethod.PUT)
-    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @ModelAttribute InvitationDto invitationDto){
+    //초대장 수정 (JSON)
+    @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
+    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
         return invitationService.modifyInvitation(invitationId, invitationDto);
     }
 
-    @DeleteMapping(value = "/deleteInvitation/{invitationId}")
+    //초대장 삭제 (Form-Data)
+    @DeleteMapping(value = "/invitation/{invitationId}")
     public ResponseEntity<ResponseDto> deleteInvitation(@PathVariable("invitationId") Long invitationId){
         return invitationService.deleteInvitation(invitationId);
     }
+
 
 
 
