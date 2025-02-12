@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.common;
+package com.dnd12.meetinginvitation.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,13 +14,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Enumeration;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -27,15 +29,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
         log.info("Received token: {}", token);  // 토큰 로그
 
+        if (token != null) {
+            //1. 레디스에서 블랙리스트 확인
+            String blackListToken = redisTemplate.opsForValue().get("BLACKLIST_" + token);
+            if (blackListToken != null) {
+                log.info("Blacklisted token attempted to access: {}", token);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid token: Token has been logged out");
+                return;  // 중요: 여기서 필터 체인 진행을 멈춤
+            }
+        }
+
         if (token != null && jwtTokenProvider.validateToken(token)) {
             String userEmail = jwtTokenProvider.getUserEmail(token);
             log.info("Extracted email: {}", userEmail);  // 이메일 로그
 
             Authentication authentication =
                     new UsernamePasswordAuthenticationToken(
-                    userEmail, //principal(사용자 식별자)
-                    null, //credentials
-                    Collections.emptyList()); //authorities
+                            userEmail, //principal(사용자 식별자)
+                            null, //credentials
+                            Collections.emptyList()); //authorities
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("Authentication set in SecurityContext");  // 인증 설정 로그
         }
@@ -45,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        log.info("bearerToken: {}",bearerToken);
+        log.info("bearerToken: {}", bearerToken);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
