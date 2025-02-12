@@ -52,6 +52,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '3.4.2'
+
+    //로그아웃 기능을 위한 redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {
