@@ -55,6 +55,7 @@ dependencies {
 
     //로그아웃 기능을 위한 redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 }
 
 tasks.named('test') {

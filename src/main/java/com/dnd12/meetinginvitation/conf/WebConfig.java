@@ -30,8 +30,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") //모든 경로에 대해 CORS를 적용
                 .allowedOrigins(
-                        "http://localhost:8080", // 서버 배포 시 해당 도메인으로 변경 필요
-                        "http://localhost:3000" // 프론트 서버 배포 후 수정
+                        "https://43.202.1.235:8999", // 서버 배포 시 해당 도메인으로 변경 필요
+                        "http://localhost:3000", // 프론트 서버 배포 후 수정
+                        "https://localhost:8443"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type")

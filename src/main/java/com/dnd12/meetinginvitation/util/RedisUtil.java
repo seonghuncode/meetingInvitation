@@ -34,4 +34,6 @@ public class RedisUtil {
     public Object getValues(String key) {
         return redisTemplate.opsForValue().get(key);
     }
+
+
 }
