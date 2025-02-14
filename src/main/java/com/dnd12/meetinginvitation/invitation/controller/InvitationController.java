@@ -2,8 +2,11 @@ package com.dnd12.meetinginvitation.invitation.controller;
 
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
+import com.dnd12.meetinginvitation.invitation.entity.Font;
+import com.dnd12.meetinginvitation.invitation.entity.Sticker;
 import com.dnd12.meetinginvitation.invitation.service.FileStorageService;
 import com.dnd12.meetinginvitation.invitation.service.InvitationService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -28,16 +31,32 @@ public class InvitationController {
     private FileStorageService fileStorageService;
 
     //초대장 생성 (JSON)
+    @Operation(summary = "초대장생성", description = "")
+    //@ApiResponse(responseCode = "200", description = "테스트 성공")
     @RequestMapping(value = "/invitation", method = RequestMethod.POST)
     public ResponseEntity<ResponseDto> makeInvitation(@RequestBody InvitationDto invitationDto){
         return invitationService.makeInvitation(invitationDto);
     }
 
-    //초대장 전체 조회 (Form-Data)
-    @RequestMapping(value = "/invitations", method = RequestMethod.GET)
-    public ResponseEntity<ResponseDto> getInvitationAllList(@RequestParam("userId") Long userId){
-        return invitationService.getInvitationAllList(userId);
+    //폰트 생성
+    @Operation(summary = "폰트 생성", description = "")
+    @RequestMapping(value = "/font", method = RequestMethod.POST)
+    public ResponseEntity<ResponseDto>  makeFont(@RequestBody Font font){
+        return invitationService.makeFont(font);
     }
+
+    //스티커 생성
+    @Operation(summary = "스티커 생성", description = "")
+    @RequestMapping(value = "/sticker", method = RequestMethod.POST)
+    public ResponseEntity<ResponseDto>  makeSticker(@RequestBody Sticker sticker){
+        return invitationService.makeSticker(sticker);
+    }
+
+    //초대장 전체 조회 (Form-Data)
+//    @RequestMapping(value = "/invitations", method = RequestMethod.GET)
+//    public ResponseEntity<ResponseDto> getInvitationAllList(@RequestParam("userId") Long userId){
+//        return invitationService.getInvitationAllList(userId);
+//    }
 
     //초대장 이미지 요청(썸네일)
     @RequestMapping(value = "/getInvitationImage", method = RequestMethod.GET)
@@ -64,10 +83,10 @@ public class InvitationController {
     }
 
     //초대장 수정 (JSON)
-    @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
-    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
-        return invitationService.modifyInvitation(invitationId, invitationDto);
-    }
+//    @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
+//    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
+//        return invitationService.modifyInvitation(invitationId, invitationDto);
+//    }
 
     //초대장 삭제 (Form-Data)
     @DeleteMapping(value = "/invitation/{invitationId}")

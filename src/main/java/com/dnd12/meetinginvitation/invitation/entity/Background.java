@@ -9,8 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "stickers")
-public class Stickers {
+@Table(name = "backgournd")
+public class Background {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
