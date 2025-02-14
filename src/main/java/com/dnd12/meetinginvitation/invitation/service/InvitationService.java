@@ -20,9 +20,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -42,6 +46,7 @@ public class InvitationService {
     private StickerRepository stickerRepository;
 
     //초대장 생성
+    @Transactional
     public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto){
 
         try {
@@ -97,6 +102,7 @@ public class InvitationService {
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 
         }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
         }
@@ -105,23 +111,31 @@ public class InvitationService {
 
 
     //폰트 생성
-    public ResponseEntity<ResponseDto> makeFont(Font font){
-
+    @Transactional
+    public ResponseEntity<ResponseDto> makeFont(String fontName){
+        Font font = new Font();
+        font.setFontName(fontName);
         try{
             fontRepository.save(font);
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
         }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
         }
     }
 
     //스티커 생성
-    public ResponseEntity<ResponseDto> makeSticker(Sticker sticker){
+    @Transactional
+    public ResponseEntity<ResponseDto> makeSticker(String stickerName){
         try {
+            Sticker sticker = new Sticker();
+            sticker.setStickerName(stickerName);
             stickerRepository.save(sticker);
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
         }catch(Exception e){
+            // 예외 발생 시 롤백 수행
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
         }
@@ -129,43 +143,47 @@ public class InvitationService {
 
     
     //초대장 전체 조회
-//    @Transactional(readOnly = true)
-//    public ResponseEntity<ResponseDto> getInvitationAllList(Long userId){
-//
-//        if(!userRepository.existsById(userId)){
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(ResponseDto.fail("Fail: user not found with id: " + userId));
-//        }
-//
-//
-//        List<Invitation> list = invitationRepository.findByUserId(userId);
-//        List<InvitationDto> invitationList = new ArrayList<>();
-//
-//        for (Invitation invitation : list) {
-//
-//            // URL 경로로 MultipartFile을 로드하기 위해 FileStorageService 사용
-//            //MultipartFile invitationTemplate = fileStorageService.loadFileAsMultipartFile(invitation.getInvitationTemplate_url());
-//
-//            invitationList.add(new InvitationDto(
-//                    invitation.getUser().getId(),
-//                    invitation.getId(),
-//                    invitation.getCreatedAt(),
-//                    invitation.getUpdatedAt(),
-//                    invitation.getPlace(),
-//                    invitation.getDetailAddress(),
-//                    invitation.getDate(),
-//                    invitation.getMaxAttendences(),
-//                    invitation.getDescription(),
-//                    invitation.getState(),
-//                    invitation.getLink(),
-//                    //invitationTemplate,
-//                    null,
-//                    invitation.getInvitationTemplate_url()
-//            ));
-//
-//        }
-//        return ResponseEntity.ok(ResponseDto.success(invitationList));
-//    }
+    @Transactional(readOnly = true)
+    public ResponseEntity<ResponseDto> getInvitationAllList(Long userId){
+
+        if(!userRepository.existsById(userId)){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseDto.fail("Fail: user not found with id: " + userId));
+        }
+
+
+        List<Invitation> list = invitationRepository.findByUserId(userId);
+        List<InvitationDto> invitationList = new ArrayList<>();
+
+        for (Invitation invitation : list) {
+
+            // URL 경로로 MultipartFile을 로드하기 위해 FileStorageService 사용
+            //MultipartFile invitationTemplate = fileStorageService.loadFileAsMultipartFile(invitation.getInvitationTemplate_url());
+
+            invitationList.add(new InvitationDto(
+                    invitation.getUser().getId(),
+                    invitation.getId(),
+                    invitation.getCreatedAt(),
+                    invitation.getUpdatedAt(),
+                    invitation.getPlace(),
+                    invitation.getDetailAddress(),
+                    invitation.getDate(),
+                    invitation.getMaxAttendences(),
+                    invitation.getDescription(),
+                    invitation.getState(),
+                    invitation.getLink(),
+                    invitation.getTitle(),
+                    invitation.getFont().getFontName(),
+                    invitation.getSticker().getStickerName(),
+                    invitation.getBackgroundUrl()
+                    //invitationTemplate,
+                    //null
+                    //invitation.getInvitationTemplate_url()
+            ));
+
+        }
+        return ResponseEntity.ok(ResponseDto.success(invitationList));
+    }
 
 //초대장 수정
 //public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invitationDto){

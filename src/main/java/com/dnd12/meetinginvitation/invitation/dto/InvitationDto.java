@@ -24,8 +24,8 @@ public class InvitationDto {
     private String description;
     private String state;
     private String link;
-    private String imageData;
-    private String invitationTemplate_url;
+    //private String imageData;
+    //private String invitationTemplate_url;
     private String fontName;
     private String sticker;
     private String title;
