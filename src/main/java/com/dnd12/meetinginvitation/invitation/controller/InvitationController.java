@@ -29,7 +29,7 @@ public class InvitationController {
     private FileStorageService fileStorageService;
 
     //초대장 생성 (JSON)
-    @Operation(summary = "초대장생성", description = "")
+    @Operation(summary = "초대장생성", description = "1. fontName, Sticker이름의 경우 DB에 없을 경우 오류 발생 -> 폰트 생성, 스티커 생성  API를 이용해서 먼저 생성 후 다시 요청! \n2. backgroundImageData의 경우 data:image/png;base64,뒤에 인코딩한 문자열로 요청!")
     //@ApiResponse(responseCode = "200", description = "테스트 성공")
     @RequestMapping(value = "/invitation", method = RequestMethod.POST)
     public ResponseEntity<ResponseDto> makeInvitation(@RequestBody InvitationDto invitationDto){
@@ -84,10 +84,11 @@ public class InvitationController {
     }
 
     //초대장 수정 (JSON)
-//    @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
-//    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
-//        return invitationService.modifyInvitation(invitationId, invitationDto);
-//    }
+    @Operation(summary = "초대장 수정", description = "")
+    @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
+    public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
+        return invitationService.modifyInvitation(invitationId, invitationDto);
+    }
 
     //초대장 삭제 (Form-Data)
     @DeleteMapping(value = "/invitation/{invitationId}")

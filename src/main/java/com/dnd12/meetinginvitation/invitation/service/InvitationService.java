@@ -23,10 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -176,9 +178,6 @@ public class InvitationService {
                     invitation.getFont().getFontName(),
                     invitation.getSticker().getStickerName(),
                     invitation.getBackgroundUrl()
-                    //invitationTemplate,
-                    //null
-                    //invitation.getInvitationTemplate_url()
             ));
 
         }
@@ -186,50 +185,69 @@ public class InvitationService {
     }
 
 //초대장 수정
-//public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invitationDto){
-//
-//    //초대장 조회
-//    Optional<Invitation> optionalInvitation = invitationRepository.findById(id);
-//    if (!optionalInvitation.isPresent()) {
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(ResponseDto.fail("Fail: Invitation found with id " + id));
-//    }
-//
-//    Invitation invitation = optionalInvitation.get();
-//    if(invitationDto.getPlace() != null){
-//        invitation.setPlace(invitationDto.getPlace());
-//    }
-//    if(invitationDto.getDetail_address() != null){
-//        invitation.setDetailAddress(invitationDto.getDetail_address());
-//    }
-//    if(invitationDto.getDate() != null){
-//        invitation.setDate(invitationDto.getDate());
-//    }
-//    //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다
-//    invitation.setMaxAttendences(invitationDto.getMax_attendances());
-//    if(invitationDto.getDescription() != null){
-//        invitation.setDescription(invitationDto.getDescription());
-//    }
-//    //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다.
-//    invitationDto.setState(invitationDto.getState());
-//    if(invitationDto.getLink() != null){
-//        invitation.setLink(invitationDto.getLink());
-//    }
-//
-//    String fileUrl = null;
-//    try {
-//        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getImageData());
-//        invitation.setInvitationTemplate_url(fileUrl);
-//    } catch (IOException e) {
-//        throw new RuntimeException(e);
-//    }
-//
-//    invitation.setUpdatedAt(LocalDateTime.now());
-//
-//    invitationRepository.save(invitation);
-//    return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
-//
-//}
+public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invitationDto){
+
+    //초대장 조회
+    Optional<Invitation> optionalInvitation = invitationRepository.findById(id);
+    if (!optionalInvitation.isPresent()) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseDto.fail("Fail: Invitation found with id " + id));
+    }
+
+    Invitation invitation = optionalInvitation.get();
+    if(invitationDto.getPlace() != null){
+        invitation.setPlace(invitationDto.getPlace());
+    }
+    if(invitationDto.getDetail_address() != null){
+        invitation.setDetailAddress(invitationDto.getDetail_address());
+    }
+    if(invitationDto.getDate() != null){
+        invitation.setDate(invitationDto.getDate());
+    }
+    //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다
+    invitation.setMaxAttendences(invitationDto.getMax_attendances());
+
+    if(invitationDto.getDescription() != null) {
+        invitation.setDescription(invitationDto.getDescription());
+    }
+
+    //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다.
+    invitationDto.setState(invitationDto.getState());
+    if(invitationDto.getLink() != null){
+        invitation.setLink(invitationDto.getLink());
+    }
+
+    String fileUrl = null;
+    try {
+        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
+        invitation.setBackgroundUrl(fileUrl);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+
+    //전달 받은 폰트 이름으로 폰트 조회
+    Font font = fontRepository.findByFontName(invitationDto.getFontName())
+            .orElseThrow(() -> new RuntimeException("Fail: font not found with name: " + invitationDto.getFontName()));
+
+    //전달 받은 스티커 이름으로 스티커 조회
+    Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
+            .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
+
+    invitation.setFont(font);
+
+    invitation.setSticker(sticker);
+
+
+    if(invitationDto.getTitle() != null){
+        invitation.setTitle(invitationDto.getTitle());
+    }
+
+    invitation.setUpdatedAt(LocalDateTime.now());
+
+    invitationRepository.save(invitation);
+    return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
+
+}
 
 //초대장 삭제
 public ResponseEntity<ResponseDto> deleteInvitation(Long invitationId){
