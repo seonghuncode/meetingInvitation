@@ -9,13 +9,13 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "template")
-public class Template {
+@Table(name = "stickers")
+public class Sticker {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String imageUrl;
+    @Column(nullable = false, unique = true)
+    private String stickerName;
 }

@@ -5,6 +5,8 @@ import com.dnd12.meetinginvitation.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -27,7 +29,9 @@ public class InvitationParticipant {
     private User user; // 초대장에 대한 사용자 정보
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private InvitationType invitationType; // 초대 유형 (CREATOR, INVITED)
+
+    //초대장 날짜(생성된 or 초대받은)
+    private LocalDateTime date;
 
 }

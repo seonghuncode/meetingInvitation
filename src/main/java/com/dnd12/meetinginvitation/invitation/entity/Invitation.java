@@ -24,6 +24,7 @@ public class Invitation {
     @OneToMany(mappedBy = "invitation", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<InvitationParticipant> participants = new ArrayList<>();
 
+
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     private User user;
@@ -47,7 +48,24 @@ public class Invitation {
      
     private String link;
 
-    private String invitationTemplate_url;
+    private String title;
+
+    // 초대장은 하나의 폰트를 사용
+    @ManyToOne
+    @JoinColumn(name = "font_id", nullable = true)
+    private Font font;
+
+    // 초대장은 하나의 스티커를 사용
+    @ManyToOne
+    @JoinColumn(name = "sticker_id", nullable = true)
+    private Sticker sticker;
+
+//    @OneToOne
+//    @JoinColumn(name = "template_id", nullable = false)
+//    private Background background;
+
+    private String backgroundUrl;
+
 
 
 }

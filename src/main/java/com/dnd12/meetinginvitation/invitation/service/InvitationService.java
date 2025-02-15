@@ -3,11 +3,15 @@ package com.dnd12.meetinginvitation.invitation.service;
 
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
+import com.dnd12.meetinginvitation.invitation.entity.Font;
 import com.dnd12.meetinginvitation.invitation.entity.Invitation;
 import com.dnd12.meetinginvitation.invitation.entity.InvitationParticipant;
+import com.dnd12.meetinginvitation.invitation.entity.Sticker;
 import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
+import com.dnd12.meetinginvitation.invitation.repository.FontRepository;
 import com.dnd12.meetinginvitation.invitation.repository.InvitationParticipantRepository;
 import com.dnd12.meetinginvitation.invitation.repository.InvitationRepository;
+import com.dnd12.meetinginvitation.invitation.repository.StickerRepository;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -37,26 +42,36 @@ public class InvitationService {
     private FileStorageService fileStorageService;
     @Autowired
     private InvitationParticipantRepository invitationParticipantRepository;
+    @Autowired
+    private FontRepository fontRepository;
+    @Autowired
+    private StickerRepository stickerRepository;
 
     //초대장 생성
+    @Transactional
     public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto){
 
         try {
-            log.info("유저 조회");
-
             // User 조회 (creator_id를 통해)
             User user = userRepository.findById(invitationDto.getCreator_id())
                     .orElseThrow(() -> new RuntimeException("Fail: user not found with id: " + invitationDto.getCreator_id()));
 
-            log.info("유저 조회 끝");
+            //전달 받은 폰트 이름으로 폰트 조회
+            Font font = fontRepository.findByFontName(invitationDto.getFontName())
+                    .orElseThrow(() -> new RuntimeException("Fail: font not found with name: " + invitationDto.getFontName()));
 
-            //파일 저장 처리
-            // 이미지 Base64 디코딩 및 저장
-            String fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getImageData());
+            //전달 받은 스티커 이름으로 스티커 조회
+            Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
+                    .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
+            //전달 받은 배경(Base64로 인코딩된 이미지 파일을 디코딩 해서 특정 경로에 저장 후 해당 url저장)
+            String fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
+
+            //초대장 생성
             Invitation invitation = Invitation.builder()
                     .user(user)
                     .createdAt(invitationDto.getCreated_at())
+                    .updatedAt(invitationDto.getUpdated_at())
                     .place(invitationDto.getPlace())
                     .detailAddress(invitationDto.getDetail_address())
                     .date(invitationDto.getDate())
@@ -64,39 +79,68 @@ public class InvitationService {
                     .description(invitationDto.getDescription())
                     .state(invitationDto.getState())
                     .link(invitationDto.getLink())
-                    .invitationTemplate_url(fileUrl)
+                    .title(invitationDto.getTitle())
+                    .font(font)
+                    .sticker(sticker)
+                    .backgroundUrl(fileUrl)
                     .build();
+
 
             //초대장 저장
             invitationRepository.save(invitation);
 
-           /* InvitationType invitationType = InvitationType.ERROR;
-            if(InvitationType.INVITED.equals("INVITED")){
-                invitationType = InvitationType.INVITED;
-            }else if(InvitationType.CREATOR.equals("CREATOR")){
-                invitationType = InvitationType.INVITED;
-            }else{
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(ResponseDto.fail("Fail: The invitationType must be CREATOR or INVITED."));
-            }*/
 
             //초대장 생성시 invitationType은 항상 CREATOR (초대장을 누군가에게 전송할 경우 INVITED로 변경해서 전송)
             InvitationParticipant creatorParticipant = InvitationParticipant.builder()
                     .invitation(invitation)
                     .user(user)
                     .invitationType(InvitationType.CREATOR)
+                    .date(LocalDateTime.now())
                     .build();
-            //초대장 타입 저장
+            //초대장 타입 저장(CREATOR)
             invitationParticipantRepository.save(creatorParticipant);
 
 
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 
         }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
         }
 
+    }
+
+
+    //폰트 생성
+    @Transactional
+    public ResponseEntity<ResponseDto> makeFont(String fontName){
+        Font font = new Font();
+        font.setFontName(fontName);
+        try{
+            fontRepository.save(font);
+            return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
+        }catch (Exception e){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseDto.fail(e.getMessage()));
+        }
+    }
+
+    //스티커 생성
+    @Transactional
+    public ResponseEntity<ResponseDto> makeSticker(String stickerName){
+        try {
+            Sticker sticker = new Sticker();
+            sticker.setStickerName(stickerName);
+            stickerRepository.save(sticker);
+            return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
+        }catch(Exception e){
+            // 예외 발생 시 롤백 수행
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseDto.fail(e.getMessage()));
+        }
     }
 
     
@@ -117,7 +161,7 @@ public class InvitationService {
 
             // URL 경로로 MultipartFile을 로드하기 위해 FileStorageService 사용
             //MultipartFile invitationTemplate = fileStorageService.loadFileAsMultipartFile(invitation.getInvitationTemplate_url());
-            
+
             invitationList.add(new InvitationDto(
                     invitation.getUser().getId(),
                     invitation.getId(),
@@ -130,9 +174,10 @@ public class InvitationService {
                     invitation.getDescription(),
                     invitation.getState(),
                     invitation.getLink(),
-                    //invitationTemplate,
-                    null,
-                    invitation.getInvitationTemplate_url()
+                    invitation.getTitle(),
+                    invitation.getFont().getFontName(),
+                    invitation.getSticker().getStickerName(),
+                    invitation.getBackgroundUrl()
             ));
 
         }
@@ -161,9 +206,11 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     }
     //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다
     invitation.setMaxAttendences(invitationDto.getMax_attendances());
-    if(invitationDto.getDescription() != null){
+
+    if(invitationDto.getDescription() != null) {
         invitation.setDescription(invitationDto.getDescription());
     }
+
     //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다.
     invitationDto.setState(invitationDto.getState());
     if(invitationDto.getLink() != null){
@@ -172,10 +219,27 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
 
     String fileUrl = null;
     try {
-        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getImageData());
-        invitation.setInvitationTemplate_url(fileUrl);
+        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
+        invitation.setBackgroundUrl(fileUrl);
     } catch (IOException e) {
         throw new RuntimeException(e);
+    }
+
+    //전달 받은 폰트 이름으로 폰트 조회
+    Font font = fontRepository.findByFontName(invitationDto.getFontName())
+            .orElseThrow(() -> new RuntimeException("Fail: font not found with name: " + invitationDto.getFontName()));
+
+    //전달 받은 스티커 이름으로 스티커 조회
+    Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
+            .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
+
+    invitation.setFont(font);
+
+    invitation.setSticker(sticker);
+
+
+    if(invitationDto.getTitle() != null){
+        invitation.setTitle(invitationDto.getTitle());
     }
 
     invitation.setUpdatedAt(LocalDateTime.now());
