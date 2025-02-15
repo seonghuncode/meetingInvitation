@@ -39,23 +39,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     implementation group: 'io.github.cdimascio', name: 'dotenv-java', version: '3.0.0'
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.0.2' // swagger
-    implementation 'org.springframework.boot:spring-boot-devtools'//리소스 변경시 자동 재시작
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    //카카오톡 로그인
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-    //JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '3.4.2'
-
-    //로그아웃 기능을 위한 redis
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
 }
 
 tasks.named('test') {

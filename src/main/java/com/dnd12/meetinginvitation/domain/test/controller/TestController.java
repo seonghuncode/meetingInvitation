@@ -1,15 +1,16 @@
-package com.dnd12.meetinginvitation.test.controller;
+package com.dnd12.meetinginvitation.domain.test.controller;
 
-import com.dnd12.meetinginvitation.test.entity.TestEntity;
-import com.dnd12.meetinginvitation.test.service.TestService;
+import com.dnd12.meetinginvitation.domain.test.entity.TestEntity;
+import com.dnd12.meetinginvitation.domain.test.service.TestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
-@RestController
+@Controller
 @RequestMapping("test")
 public class TestController {
 
