@@ -68,12 +68,14 @@ public class KakaoLoginService {
                     .build();
             userRepository.save(user);
         }
-        // 액세스, 리프레시 토큰 생성
+        // 액세스 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(user.getEmail());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
 
-        // 레디스에 리프레시 토큰 저장
-        redisUtil.setValuesWithTimeout("RT:" + user.getEmail(), refreshToken, tokenValidityInMilliseconds * 9);
+        // 리프레시 토큰 => 보류
+//        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+
+        // 레디스에 리프레시 토큰 저장 => 보류
+//        redisUtil.setValuesWithTimeout("RT:" + user.getEmail(), refreshToken, tokenValidityInMilliseconds * 9);
 
         //레디스에 카카오 AccessToken 저장
         redisUtil.setValuesWithTimeout("AT:" + user.getEmail(),kakaoAccessToken,tokenValidityInMilliseconds);
@@ -81,7 +83,7 @@ public class KakaoLoginService {
         //응답 생성
         return LoginResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
+//                .refreshToken(refreshToken) => 보류
                 .email(user.getEmail())
                 .name(user.getName())
                 .userId(user.getId())
@@ -127,31 +129,31 @@ public class KakaoLoginService {
 
         return userInfo;
     }
-
-    public TokenDto refreshAccessToken(String refreshToken) {
-        // 리프레시 토큰 유효성 검증
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("Invalid refresh token");
-        }
-
-        // 토큰에서 이메일 추출
-        String email = jwtTokenProvider.getUserEmail(refreshToken);
-
-        // 레디스에서 refresh token 조회
-        String savedRefreshToken = redisTemplate.opsForValue().get("RT:" + email);
-
-        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new IllegalArgumentException("Refresh token not found or not matched");
-        }
-
-        //새로운 AccessToken 발급
-        String newAccessToken = jwtTokenProvider.createAccessToken(email);
-
-        return TokenDto.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+// 액세스 토큰 재발급 => 보류
+//    public TokenDto refreshAccessToken(String refreshToken) {
+//        // 리프레시 토큰 유효성 검증
+//        if (!jwtTokenProvider.validateToken(refreshToken)) {
+//            throw new IllegalArgumentException("Invalid refresh token");
+//        }
+//
+//        // 토큰에서 이메일 추출
+//        String email = jwtTokenProvider.getUserEmail(refreshToken);
+//
+//        // 레디스에서 refresh token 조회
+//        String savedRefreshToken = redisTemplate.opsForValue().get("RT:" + email);
+//
+//        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+//            throw new IllegalArgumentException("Refresh token not found or not matched");
+//        }
+//
+//        //새로운 AccessToken 발급
+//        String newAccessToken = jwtTokenProvider.createAccessToken(email);
+//
+//        return TokenDto.builder()
+//                .accessToken(newAccessToken)
+//                .refreshToken(refreshToken)
+//                .build();
+//    }
 
     }
 

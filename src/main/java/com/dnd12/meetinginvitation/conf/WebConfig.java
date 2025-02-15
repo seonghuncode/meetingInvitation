@@ -38,6 +38,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("Authorization", "Content-Type")
                 .allowCredentials(true) //인증 정보 허용
                 .maxAge(3600); //preflight 캐시 시간 (1시간)
-
     }
 }

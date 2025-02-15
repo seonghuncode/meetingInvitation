@@ -3,6 +3,8 @@ package com.dnd12.meetinginvitation.user.service;
 import com.dnd12.meetinginvitation.jwt.JwtTokenProvider;
 import com.dnd12.meetinginvitation.user.dto.KakaoLogoutResponse;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -25,9 +27,17 @@ public class KakaoLogoutService {
     private final String KAUTH_USER_URL_HOST = "https://kapi.kakao.com";
 
     //로그아웃
-    public void logout(String token) {
-        // 액세스 토큰 무효화
+    public void logout(HttpServletResponse response, String token) {
+        // 액세스 토큰 무효화(블랙리스트 처리)
         invalidateToken(token);
+
+        // 쿠키의 액세스 토큰 삭제
+        Cookie cookie = new Cookie("AccessToken", null);
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
 
         // 카카오 소셜 로그인 accessToken 삭제
         String userEmail = jwtTokenProvider.getUserEmail(token);
