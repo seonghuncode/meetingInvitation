@@ -55,7 +55,8 @@ build
 DB
 keystore.p12
 .env.dev
-.env.prob
+.env.prod
+
 
 
 #AWS관련 보안 파일
