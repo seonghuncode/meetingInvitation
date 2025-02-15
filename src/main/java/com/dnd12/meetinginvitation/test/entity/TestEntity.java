@@ -1,4 +1,4 @@
-package com.dnd12.meetinginvitation.domain.test.entity;
+package com.dnd12.meetinginvitation.test.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
