@@ -16,6 +16,10 @@ import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +53,7 @@ public class InvitationService {
 
     //초대장 생성
     @Transactional
-    public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto){
+    public ResponseEntity<ResponseDto> makeInvitation(InvitationDto invitationDto) {
 
         try {
             // User 조회 (creator_id를 통해)
@@ -65,7 +69,7 @@ public class InvitationService {
                     .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
             //전달 받은 배경(Base64로 인코딩된 이미지 파일을 디코딩 해서 특정 경로에 저장 후 해당 url저장)
-            String fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
+            String fileUrl = "/getInvitationImage?fileName=" + fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
 
             //초대장 생성
             Invitation invitation = Invitation.builder()
@@ -103,7 +107,7 @@ public class InvitationService {
 
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
@@ -114,13 +118,13 @@ public class InvitationService {
 
     //폰트 생성
     @Transactional
-    public ResponseEntity<ResponseDto> makeFont(String fontName){
+    public ResponseEntity<ResponseDto> makeFont(String fontName) {
         Font font = new Font();
         font.setFontName(fontName);
-        try{
+        try {
             fontRepository.save(font);
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
-        }catch (Exception e){
+        } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail(e.getMessage()));
@@ -129,13 +133,13 @@ public class InvitationService {
 
     //스티커 생성
     @Transactional
-    public ResponseEntity<ResponseDto> makeSticker(String stickerName){
+    public ResponseEntity<ResponseDto> makeSticker(String stickerName) {
         try {
             Sticker sticker = new Sticker();
             sticker.setStickerName(stickerName);
             stickerRepository.save(sticker);
             return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
-        }catch(Exception e){
+        } catch (Exception e) {
             // 예외 발생 시 롤백 수행
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -143,49 +147,91 @@ public class InvitationService {
         }
     }
 
-    
+
     //초대장 전체 조회
     @Transactional(readOnly = true)
-    public ResponseEntity<ResponseDto> getInvitationAllList(Long userId){
+    public ResponseEntity<ResponseDto> getInvitationAllList(Long userId, int page, int size, String sort) {
 
-        if(!userRepository.existsById(userId)){
+        return getInvitationListByParam(userId, page, size, sort, "ALL");
+    }
+
+
+    //생성한 초대장 전체조회
+    @Transactional(readOnly = true)
+    public ResponseEntity<ResponseDto> getCreatorInvitationAllList(Long userId, int page, int size, String sort) {
+        return getInvitationListByParam(userId, page, size, sort, "CREATOR");
+    }
+
+    //생성한 초대장 전체조회
+    @Transactional(readOnly = true)
+    public ResponseEntity<ResponseDto> getInvitedInvitationAllList(Long userId, int page, int size, String sort) {
+        return getInvitationListByParam(userId, page, size, sort, "INVITED");
+    }
+
+
+    private ResponseEntity<ResponseDto> getInvitationListByParam(Long userId, int page, int size, String sort, String listType) {
+
+        if (!userRepository.existsById(userId)) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ResponseDto.fail("Fail: user not found with id: " + userId));
         }
 
 
-        List<Invitation> list = invitationRepository.findByUserId(userId);
+        Sort.Direction direction = sort.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt")); // createdAt 기준 정렬
+
+        Page<Invitation> invitationPage = null;
         List<InvitationDto> invitationList = new ArrayList<>();
-
-        for (Invitation invitation : list) {
-
-            // URL 경로로 MultipartFile을 로드하기 위해 FileStorageService 사용
-            //MultipartFile invitationTemplate = fileStorageService.loadFileAsMultipartFile(invitation.getInvitationTemplate_url());
-
-            invitationList.add(new InvitationDto(
-                    invitation.getUser().getId(),
-                    invitation.getId(),
-                    invitation.getCreatedAt(),
-                    invitation.getUpdatedAt(),
-                    invitation.getPlace(),
-                    invitation.getDetailAddress(),
-                    invitation.getDate(),
-                    invitation.getMaxAttendences(),
-                    invitation.getDescription(),
-                    invitation.getState(),
-                    invitation.getLink(),
-                    invitation.getTitle(),
-                    invitation.getFont().getFontName(),
-                    invitation.getSticker().getStickerName(),
-                    invitation.getBackgroundUrl()
-            ));
-
+        boolean result = false;
+        if (listType.equals("ALL")) {
+            invitationPage = invitationRepository.findByUserId(userId, pageable);
+            result = true;
+        } else if (listType.equals("CREATOR")) {
+            invitationPage = invitationRepository.findByParticipantsUserIdAndParticipantsInvitationType(userId, InvitationType.CREATOR, pageable);
+            result = true;
+        } else if (listType.equals("INVITED")) {
+            invitationPage = invitationRepository.findByParticipantsUserIdAndParticipantsInvitationType(userId, InvitationType.INVITED, pageable);
+            result = true;
         }
-        return ResponseEntity.ok(ResponseDto.success(invitationList));
+
+        if (result) {
+
+            for (Invitation invitation : invitationPage) {
+
+                //특정사용자, 현재 초대장에 대한 invitationType조회
+                InvitationParticipant invitationParticipant = invitationParticipantRepository.findByInvitationIdAndUserId(invitation.getId(), userId);
+
+                invitationList.add(new InvitationDto(
+                        invitation.getUser().getId(),
+                        invitation.getId(),
+                        invitation.getCreatedAt(),
+                        invitation.getUpdatedAt(),
+                        invitation.getPlace(),
+                        invitation.getDetailAddress(),
+                        invitation.getDate(),
+                        invitation.getMaxAttendences(),
+                        invitation.getDescription(),
+                        invitation.getState(),
+                        invitation.getLink(),
+                        invitationParticipant.getInvitationType(),
+                        invitation.getTitle(),
+                        invitation.getFont().getFontName(),
+                        invitation.getSticker().getStickerName(),
+                        invitation.getBackgroundUrl()
+                ));
+
+            }
+            return ResponseEntity.ok(ResponseDto.success(invitationList));
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseDto.fail("Fail: invitationType is wrong."));
     }
 
+
+
+
 //초대장 수정
-public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invitationDto){
+public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invitationDto) {
 
     //초대장 조회
     Optional<Invitation> optionalInvitation = invitationRepository.findById(id);
@@ -195,31 +241,31 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     }
 
     Invitation invitation = optionalInvitation.get();
-    if(invitationDto.getPlace() != null){
+    if (invitationDto.getPlace() != null) {
         invitation.setPlace(invitationDto.getPlace());
     }
-    if(invitationDto.getDetail_address() != null){
+    if (invitationDto.getDetail_address() != null) {
         invitation.setDetailAddress(invitationDto.getDetail_address());
     }
-    if(invitationDto.getDate() != null){
+    if (invitationDto.getDate() != null) {
         invitation.setDate(invitationDto.getDate());
     }
     //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다
     invitation.setMaxAttendences(invitationDto.getMax_attendances());
 
-    if(invitationDto.getDescription() != null) {
+    if (invitationDto.getDescription() != null) {
         invitation.setDescription(invitationDto.getDescription());
     }
 
     //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다.
     invitationDto.setState(invitationDto.getState());
-    if(invitationDto.getLink() != null){
+    if (invitationDto.getLink() != null) {
         invitation.setLink(invitationDto.getLink());
     }
 
     String fileUrl = null;
     try {
-        fileUrl = "/getInvitationImage?fileName=" +  fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
+        fileUrl = "/getInvitationImage?fileName=" + fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
         invitation.setBackgroundUrl(fileUrl);
     } catch (IOException e) {
         throw new RuntimeException(e);
@@ -238,7 +284,7 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     invitation.setSticker(sticker);
 
 
-    if(invitationDto.getTitle() != null){
+    if (invitationDto.getTitle() != null) {
         invitation.setTitle(invitationDto.getTitle());
     }
 
@@ -250,9 +296,9 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
 }
 
 //초대장 삭제
-public ResponseEntity<ResponseDto> deleteInvitation(Long invitationId){
+public ResponseEntity<ResponseDto> deleteInvitation(Long invitationId) {
     boolean isDeleted = invitationRepository.existsById(invitationId);
-    if(!isDeleted){
+    if (!isDeleted) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseDto.fail("Fail: Invitation found with id " + invitationId));
     }
@@ -260,28 +306,28 @@ public ResponseEntity<ResponseDto> deleteInvitation(Long invitationId){
     return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
 }
 
-    public String getFileExtension(String fileName) {
-        int index = fileName.lastIndexOf('.');
-        return index > 0 ? fileName.substring(index + 1) : "";
-    }
+public String getFileExtension(String fileName) {
+    int index = fileName.lastIndexOf('.');
+    return index > 0 ? fileName.substring(index + 1) : "";
+}
 
-    public MediaType getMediaTypeForFileExtension(String fileExtension) {
-        switch (fileExtension) {
-            case "png":
-                return MediaType.IMAGE_PNG;
-            case "jpg":
-            case "jpeg":
-                return MediaType.IMAGE_JPEG;
-            case "gif":
-                return MediaType.IMAGE_GIF;
-            case "bmp":
-                return MediaType.valueOf("image/bmp");
-            case "webp":
-                return MediaType.valueOf("image/webp");
-            default:
-                return MediaType.APPLICATION_OCTET_STREAM; // 기본값은 일반적인 바이너리 파일
-        }
+public MediaType getMediaTypeForFileExtension(String fileExtension) {
+    switch (fileExtension) {
+        case "png":
+            return MediaType.IMAGE_PNG;
+        case "jpg":
+        case "jpeg":
+            return MediaType.IMAGE_JPEG;
+        case "gif":
+            return MediaType.IMAGE_GIF;
+        case "bmp":
+            return MediaType.valueOf("image/bmp");
+        case "webp":
+            return MediaType.valueOf("image/webp");
+        default:
+            return MediaType.APPLICATION_OCTET_STREAM; // 기본값은 일반적인 바이너리 파일
     }
+}
 
 
 
