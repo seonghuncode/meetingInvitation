@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/response").permitAll()
+                        .requestMatchers("/", "/sign-up", "/login", "/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/response", "/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
 
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,redisTemplate),

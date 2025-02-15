@@ -11,5 +11,5 @@ public interface InvitationParticipantRepository extends JpaRepository<Invitatio
 
     // 특정 사용자에 대한 타입별 목록 조회 (CREATOR/INVITED)
     List<InvitationParticipant> findByUserAndInvitationType(User user, InvitationType invitationType);
-
+    InvitationParticipant findByInvitationIdAndUserId(Long invitationId, Long userId);
 }

@@ -65,7 +65,4 @@ public class Invitation {
 //    private Background background;
 
     private String backgroundUrl;
-
-
-
 }

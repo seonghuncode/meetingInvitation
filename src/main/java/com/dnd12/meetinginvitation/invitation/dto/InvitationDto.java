@@ -1,6 +1,7 @@
 package com.dnd12.meetinginvitation.invitation.dto;
 
 
+import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class InvitationDto {
     private String description;
     private String state;
     private String link;
+    private InvitationType invitationType;
     //private String imageData;
     //private String invitationTemplate_url;
     private String fontName;
