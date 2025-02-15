@@ -1,27 +1,21 @@
 package com.dnd12.meetinginvitation.user.service;
 
 import com.dnd12.meetinginvitation.jwt.JwtTokenProvider;
-import com.dnd12.meetinginvitation.user.dto.KakaoLogoutResponse;
-import com.dnd12.meetinginvitation.user.dto.KakaoTokenResponseDto;
-import com.dnd12.meetinginvitation.user.dto.KakaoUserInfoDto;
-import com.dnd12.meetinginvitation.user.dto.LoginResponse;
+import com.dnd12.meetinginvitation.user.dto.*;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
 import com.dnd12.meetinginvitation.util.RedisUtil;
 import io.netty.handler.codec.http.HttpHeaderValues;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KakaoService {
+public class KakaoLoginService {
 
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
@@ -43,7 +37,7 @@ public class KakaoService {
 
     private final String KAUTH_TOKEN_URL_HOST = "https://kauth.kakao.com";
     private final String KAUTH_USER_URL_HOST = "https://kapi.kakao.com";
-    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 3;
+    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 3; //레디스에 토큰 저장 시간
 
     public LoginResponse handleKakaoLogin(String code) {
         // 카카오 액세스 토큰 받기
@@ -74,8 +68,14 @@ public class KakaoService {
                     .build();
             userRepository.save(user);
         }
-        //JWT 토큰 생성
-        String accessToken = jwtTokenProvider.createToken(user.getEmail());
+        // 액세스 토큰 생성
+        String accessToken = jwtTokenProvider.createAccessToken(user.getEmail());
+
+        // 리프레시 토큰 => 보류
+//        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+
+        // 레디스에 리프레시 토큰 저장 => 보류
+//        redisUtil.setValuesWithTimeout("RT:" + user.getEmail(), refreshToken, tokenValidityInMilliseconds * 9);
 
         //레디스에 카카오 AccessToken 저장
         redisUtil.setValuesWithTimeout("AT:" + user.getEmail(),kakaoAccessToken,tokenValidityInMilliseconds);
@@ -83,6 +83,7 @@ public class KakaoService {
         //응답 생성
         return LoginResponse.builder()
                 .accessToken(accessToken)
+//                .refreshToken(refreshToken) => 보류
                 .email(user.getEmail())
                 .name(user.getName())
                 .userId(user.getId())
@@ -128,59 +129,32 @@ public class KakaoService {
 
         return userInfo;
     }
+// 액세스 토큰 재발급 => 보류
+//    public TokenDto refreshAccessToken(String refreshToken) {
+//        // 리프레시 토큰 유효성 검증
+//        if (!jwtTokenProvider.validateToken(refreshToken)) {
+//            throw new IllegalArgumentException("Invalid refresh token");
+//        }
+//
+//        // 토큰에서 이메일 추출
+//        String email = jwtTokenProvider.getUserEmail(refreshToken);
+//
+//        // 레디스에서 refresh token 조회
+//        String savedRefreshToken = redisTemplate.opsForValue().get("RT:" + email);
+//
+//        if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+//            throw new IllegalArgumentException("Refresh token not found or not matched");
+//        }
+//
+//        //새로운 AccessToken 발급
+//        String newAccessToken = jwtTokenProvider.createAccessToken(email);
+//
+//        return TokenDto.builder()
+//                .accessToken(newAccessToken)
+//                .refreshToken(refreshToken)
+//                .build();
+//    }
 
-    //로그아웃
-    public void logout(String token) {
-        // 액세스 토큰 무효화
-        invalidateToken(token);
-
-        // 카카오 소셜 로그인 accessToken 삭제
-        String userEmail = jwtTokenProvider.getUserEmail(token);
-        String kakaoAccessToken = redisTemplate.opsForValue().get("AT:" + userEmail);
-
-        KakaoLogoutResponse kakaoLogoutResponse = kakaoLogout(kakaoAccessToken);
-
-    }
-
-    // 액세스/리프레시 토큰 무효화
-    private void invalidateToken(String token) {
-        if (!jwtTokenProvider.validateToken(token)) {
-            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
-        }
-        String userEmail = jwtTokenProvider.getUserEmail(token);
-        Long remainingTime = jwtTokenProvider.getExpirationTime(token);
-
-        // 남은 시간 동안만 Redis에 저장
-        if (remainingTime > 0) {
-            // JWT 토큰 블랙리스트 처리
-            redisTemplate.opsForValue()
-                    .set("BLACKLIST_" + token, userEmail, remainingTime, TimeUnit.MILLISECONDS);
-            log.info("User {} logged out successfully", userEmail);
-            }
-        }
-
-    //카카오톡 토큰 만료
-    public KakaoLogoutResponse kakaoLogout(String accessToken) {
-        KakaoLogoutResponse kakaoLogoutResponse = WebClient.create(KAUTH_USER_URL_HOST)
-                .post()
-                .uri(uriBuilder -> uriBuilder
-                        .scheme("https")
-                        .path("/v1/user/logout")
-                        .build(true))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
-                .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response ->
-                    Mono.error(new RuntimeException("카카오 로그아웃 실패"))
-                )
-                .onStatus(HttpStatusCode::is5xxServerError, response ->
-                        Mono.error(new RuntimeException("카카오 서버 오류"))
-                )
-                .bodyToMono(KakaoLogoutResponse.class)
-                .block();
-
-        return kakaoLogoutResponse;
-    }
     }
 
 

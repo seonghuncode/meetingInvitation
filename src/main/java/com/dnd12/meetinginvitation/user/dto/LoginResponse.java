@@ -7,7 +7,7 @@ import lombok.Getter;
 @Builder
 public class LoginResponse {
     private String accessToken;
-    //    private boolean isNewUser; //신규 회원인지
+//    private String refreshToken; => 보류
     private String email;
     private String name;
     private Long userId;

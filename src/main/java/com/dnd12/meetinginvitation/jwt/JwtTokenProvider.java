@@ -21,7 +21,8 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long tokenValidityInMilliseconds = 1000L * 60 * 60 * 3; //3시간
+    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 3; // 액세스 토큰 유효시간 1시간
+    private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24; //리프레시 토큰 유효시간
 
     @PostConstruct
     protected void init() {
@@ -57,11 +58,27 @@ public class JwtTokenProvider {
                 .getExpiration();
     }
 
-    // 토큰 생성
-    public String createToken(String userEmail) {
+    // Access 토큰 생성
+    public String createAccessToken(String userEmail) {
+        log.info("createAccessToken");
         Claims claims = Jwts.claims().setSubject(userEmail);
+        claims.put("type", "access");
+
+        return createToken(claims, ACCESS_TOKEN_VALIDITY);
+    }
+
+    // Refresh 토큰 생성
+    public String createRefreshToken(String userEmail) {
+        log.info("createRefreshToken");
+        Claims claims = Jwts.claims().setSubject(userEmail);
+        claims.put("type", "refresh");
+
+        return createToken(claims, REFRESH_TOKEN_VALIDITY);
+    }
+
+    public String createToken(Claims claims, long validitytime) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + tokenValidityInMilliseconds);
+        Date validity = new Date(now.getTime() + validitytime);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -71,6 +88,8 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public void saveRefreshToken(String email, String refreshToken) {
+    }
     // 토큰에서 이메일 추출
     public String getUserEmail(String token) {
         return Jwts.parserBuilder()

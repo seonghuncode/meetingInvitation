@@ -1,45 +1,72 @@
 package com.dnd12.meetinginvitation.user.controller;
 
 import com.dnd12.meetinginvitation.common.ApiResponse;
-import com.dnd12.meetinginvitation.user.dto.KakaoUserInfoDto;
 import com.dnd12.meetinginvitation.user.dto.LoginResponse;
-import com.dnd12.meetinginvitation.user.service.KakaoService;
-import com.dnd12.meetinginvitation.user.dto.KakaoTokenResponseDto;
+import com.dnd12.meetinginvitation.user.dto.TokenDto;
+import com.dnd12.meetinginvitation.user.service.KakaoLoginService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class KakaoLoginController {
 
-    private final KakaoService kakaoService;
+    private final KakaoLoginService kakaoLoginService;
+
+//    @GetMapping("/kakao_login")
+//    public ResponseEntity<ApiResponse<LoginResponse>> kakaoLogin(@RequestParam("code") String code) {
+//        LoginResponse loginResponse = kakaoLoginService.handleKakaoLogin(code);
+//        return ResponseEntity.ok(ApiResponse.success(loginResponse));
+//    }
 
     @GetMapping("/kakao_login")
-    public ResponseEntity<ApiResponse<LoginResponse>> kakaoLogin(@RequestParam("code") String code) {
-        LoginResponse loginResponse = kakaoService.handleKakaoLogin(code);
-        return ResponseEntity.ok(ApiResponse.success(loginResponse));
-    }
-
-    @PostMapping("/kakao_logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Authorization") String bearerToken) {
+    public void kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {
         try {
-            String token = bearerToken.substring(7);
-            kakaoService.logout(token);
+            LoginResponse loginResponse = kakaoLoginService.handleKakaoLogin(code);
+            String encodedName = URLEncoder.encode(loginResponse.getName(), "UTF-8");
 
-            return ResponseEntity.ok(
-                    ApiResponse.success("로그아웃이 성공적으로 처리되었습니다."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("로그아웃 처리 중 오류가 발생했습니다."));
+            //쿠키 생성
+            Cookie accessTokenCookie = new Cookie("AccessToken", loginResponse.getAccessToken());
+            accessTokenCookie.setHttpOnly(true); //JavaScript에서 접근 불가능하게 설정
+            accessTokenCookie.setSecure(true); //HTTPS에서만 전송
+            accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
+            accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
+
+            //응답에 쿠키 추가
+            response.addCookie(accessTokenCookie);
+
+            String redirectUrl = String.format(
+                    "http://localhost:3000/auth/kakao?userId=%s&name=%s&profileImageUrl=%s&email=%s",
+                    loginResponse.getUserId(),
+                    encodedName,
+                    loginResponse.getProfileImageUrl(),
+                    loginResponse.getEmail()
+            );
+
+            response.sendRedirect(redirectUrl);
+        } catch (IOException e) {
+            log.error("Redirect failed: ",e);
         }
-
-
     }
+
+    // 액세스 토큰 재발급 API => 보류
+//    @PostMapping("/refresh")
+//    public ResponseEntity<ApiResponse<TokenDto>> refresh(@RequestHeader("Authorization") String refreshToken) {
+//        try {
+//            refreshToken = refreshToken.substring(7);
+//            TokenDto newTokens = kakaoLoginService.refreshAccessToken(refreshToken);
+//            return ResponseEntity.ok(ApiResponse.success(newTokens));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("액세스 토큰 재발급 실패"));
+//        }
+//    }
 }
