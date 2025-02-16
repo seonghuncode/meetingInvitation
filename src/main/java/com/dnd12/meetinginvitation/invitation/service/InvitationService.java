@@ -64,7 +64,15 @@ public class InvitationService {
             Font font = fontRepository.findByFontName(invitationDto.getFontName())
                     .orElseThrow(() -> new RuntimeException("Fail: font not found with name: " + invitationDto.getFontName()));
 
-            //전달 받은 스티커 이름으로 스티커 조회
+            //전달 받은 스티커 이름으로 스티커 조회(1. 빈문자열 또는 null일 경우)
+            if (invitationDto.getSticker() == null || invitationDto.getSticker().trim().isEmpty() && invitationDto.getSticker().trim().equals("")) {
+                invitationDto.setSticker(null);
+                Optional<Sticker> sticker = stickerRepository.findByStickerName(invitationDto.getSticker());
+                if(sticker.isEmpty()){
+                    makeSticker(null);
+                }
+            }
+            //전달 받은 sticker이름 확인
             Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
                     .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
