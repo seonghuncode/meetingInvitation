@@ -159,7 +159,6 @@ public class InvitationService {
     //초대장 전체 조회
     @Transactional(readOnly = true)
     public ResponseEntity<ResponseDto> getInvitationAllList(Long userId, int page, int size, String sort) {
-
         return getInvitationListByParam(userId, page, size, sort, "ALL");
     }
 
@@ -174,6 +173,31 @@ public class InvitationService {
     @Transactional(readOnly = true)
     public ResponseEntity<ResponseDto> getInvitedInvitationAllList(Long userId, int page, int size, String sort) {
         return getInvitationListByParam(userId, page, size, sort, "INVITED");
+    }
+
+    //특정 초대장 조회
+    public ResponseEntity<ResponseDto> getSpecificInvitation(Long invitationId){
+        Invitation invitation = invitationRepository.findByid(invitationId);
+        List<InvitationDto> invitationList = new ArrayList<>();
+
+        invitationList.add(new InvitationDto(
+                invitation.getUser().getId(),
+                invitation.getId(),
+                invitation.getCreatedAt(),
+                invitation.getUpdatedAt(),
+                invitation.getPlace(),
+                invitation.getDetailAddress(),
+                invitation.getDate(),
+                invitation.getMaxAttendences(),
+                invitation.getDescription(),
+                invitation.getState(),
+                invitation.getLink(),
+                invitation.getTitle(),
+                invitation.getFont().getFontName(),
+                invitation.getSticker().getStickerName(),
+                invitation.getBackgroundUrl()
+        ));
+        return ResponseEntity.ok(ResponseDto.success(invitationList));
     }
 
 

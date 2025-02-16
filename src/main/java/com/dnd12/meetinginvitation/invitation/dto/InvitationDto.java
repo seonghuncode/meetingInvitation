@@ -26,10 +26,35 @@ public class InvitationDto {
     private String state;
     private String link;
     private InvitationType invitationType;
-    //private String imageData;
-    //private String invitationTemplate_url;
     private String fontName;
     private String sticker;
     private String title;
     private String backgroundImageData;
+
+
+    public InvitationDto(Long creator_id, Long invitationId, LocalDateTime created_at,
+                               LocalDateTime updated_at, String place, String detail_address,
+                               LocalDateTime date, int max_attendances, String description,
+                               String state, String link, String fontName, String sticker, String title, String backgroundImageData) {
+        this.creator_id = creator_id;
+        this.invitationId = invitationId;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+        this.place = place;
+        this.detail_address = detail_address;
+        this.date = date;
+        this.max_attendances = max_attendances;
+        this.description = description;
+        this.state = state;
+        this.link = link;
+        this.fontName = fontName;
+        this.sticker = sticker;
+        this.title = title;
+        this.backgroundImageData = backgroundImageData;
+    }
+
+
 }
+
+
+

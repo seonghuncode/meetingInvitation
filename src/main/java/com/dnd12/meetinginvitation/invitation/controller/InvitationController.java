@@ -85,6 +85,15 @@ public class InvitationController {
         return invitationService.getInvitedInvitationAllList(userId, page, size, sort);
     }
 
+    //특정 초대장 조회
+    @Operation(summary = "특정 초대장 조회", description = "")
+    @RequestMapping(value = "/specificInvitation", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getSpecificInvitation(
+            @RequestParam("invitationId") Long invitationId
+    ){
+        return invitationService.getSpecificInvitation(invitationId);
+    }
+
     //초대장 이미지 요청(썸네일)
     @Operation(summary = "초대장 배경 이미지 조회", description = "오류 발생시 404로 예외처리 필요")
     @RequestMapping(value = "/getInvitationImage", method = RequestMethod.GET)
