@@ -51,11 +51,38 @@ public class InvitationController {
         return invitationService.makeSticker(stickerName);
     }
 
-    //초대장 전체 조회 (Form-Data)
-    @Operation(summary = "초대장 전체 조회", description = "")
+    //초대장 전체 조회(페이징) (Form-Data)
+    @Operation(summary = "초대장 전체 조회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
     @RequestMapping(value = "/invitations", method = RequestMethod.GET)
-    public ResponseEntity<ResponseDto> getInvitationAllList(@RequestParam("userId") Long userId){
-        return invitationService.getInvitationAllList(userId);
+    public ResponseEntity<ResponseDto> getInvitationAllList(
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "asc") String sort) {
+        return invitationService.getInvitationAllList(userId, page, size, sort);
+    }
+
+    //생성한 초대장 전체 조회(페이징)
+    @Operation(summary = "생성한 초대장 초회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
+    @RequestMapping(value = "/creatorInvitations", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getCreatorInvitations(
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "asc") String sort) {
+        return invitationService.getCreatorInvitationAllList(userId, page, size, sort);
+    }
+
+
+    //받은 초대장 전체 조회(페이징)
+    @Operation(summary = "받은 초대장 초회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
+    @RequestMapping(value = "/invitedInvitations", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getInvitedInvitationAllList(
+            @RequestParam("userId") Long userId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "asc") String sort) {
+        return invitationService.getInvitedInvitationAllList(userId, page, size, sort);
     }
 
     //초대장 이미지 요청(썸네일)
@@ -84,7 +111,7 @@ public class InvitationController {
     }
 
     //초대장 수정 (JSON)
-    @Operation(summary = "초대장 수정", description = "")
+    @Operation(summary = "초대장 수정", description = "1. fontName, Sticker이름의 경우 DB에 없을 경우 오류 발생 -> 폰트 생성, 스티커 생성  API를 이용해서 먼저 생성 후 다시 요청! \n2. backgroundImageData의 경우 data:image/png;base64,뒤에 인코딩한 문자열로 요청!")
     @RequestMapping(value = "/invitation", method = RequestMethod.PUT)
     public ResponseEntity<ResponseDto> modifyInvitation(@RequestParam("invitationId") Long invitationId, @RequestBody InvitationDto invitationDto){
         return invitationService.modifyInvitation(invitationId, invitationDto);
