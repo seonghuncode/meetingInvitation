@@ -17,14 +17,16 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       CLIENT_ID: ${CLIENT_ID}
       CLIENT_SECRET: ${CLIENT_SECRET}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: ${REDIS_PORT}
     volumes:
       - ./keystore.p12:/keystore.p12
       - /var/www/uploads:/var/www/uploads
     depends_on:
       - postgres-db
+      - redis
     env_file:
-      - .env.prob
-      - .env
+      - .env.prod
 
 
 # 기존 PostgreSQL을 사용하지 않고 새로운 컨테이너에 PostgreSQL을 설치해서 사용할 경우
@@ -40,6 +42,16 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:latest
+    container_name: redis-server
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
 volumes:
   postgres-data:
+  redis-data:
 #    external: true #볼륨을 외부에서 유지(초기화 방지), DB가 Docker외부에 있을 경우
