@@ -64,7 +64,6 @@ public class KakaoLoginService {
                     .Id(userInfo.getId())
                     .name(userInfo.kakaoAccount.profile.getNickName())
                     .profileImageUrl(userInfo.kakaoAccount.profile.getProfileImageUrl())
-                    .createdAt(LocalDateTime.now())
                     .build();
             userRepository.save(user);
         }

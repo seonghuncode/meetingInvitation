@@ -26,7 +26,7 @@ public class Attendance {
 
     // 참석한 사용자 (ManyToOne 관계)
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false)
@@ -35,16 +35,17 @@ public class Attendance {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+//    @Column(nullable = false)
     private String password;
 
     @ElementCollection
     private List<String> messages = new ArrayList<>();
 
     @Builder
-    public Attendance(Invitation invitation, String state, String name, String password, String message) {
+    public Attendance(Invitation invitation, User user, String state, String name, String password, String message) {
 
         this.invitation = invitation;
+        this.user = user;
         this.state = state;
         this.name = name;
         this.password = password;

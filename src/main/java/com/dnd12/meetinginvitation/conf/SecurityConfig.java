@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,14 +27,25 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/response").permitAll()
+                        .requestMatchers("/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/login", "/attendance/nonUser/response").permitAll()
                         .anyRequest().authenticated())
 
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,redisTemplate),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
                         UsernamePasswordAuthenticationFilter.class)
 
                 .oauth2Login(oAuth -> oAuth
-                        .loginPage("/oauth2/authorization/kakao"));
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization"))
+                        .successHandler(((request, response, authentication) -> {
+                            String registrationId = ((OAuth2AuthenticationToken) authentication)
+                                    .getAuthorizedClientRegistrationId();
+
+                            if ("kakao-attendance".equals(registrationId)) {
+                                response.sendRedirect("/attendance/login");
+                            } else {
+                                response.sendRedirect("/kakao_login");
+                            }
+                        })));
 
         return http.build();
     }
