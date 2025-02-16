@@ -36,7 +36,7 @@ public class KakaoLogoutService {
         cookie.setMaxAge(0);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         response.addCookie(cookie);
 
         // 카카오 소셜 로그인 accessToken 삭제

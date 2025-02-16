@@ -50,7 +50,7 @@ public class AttendanceResponseController {
             //쿠키 생성
             Cookie accessTokenCookie = new Cookie("AccessToken", loginResponse.getAccessToken());
             accessTokenCookie.setHttpOnly(true); //JavaScript에서 접근 불가능하게 설정
-            accessTokenCookie.setSecure(true); //HTTPS에서만 전송
+            accessTokenCookie.setSecure(false); //HTTPS에서만 전송
             accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
             accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
 

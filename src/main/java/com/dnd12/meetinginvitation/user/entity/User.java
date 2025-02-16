@@ -1,6 +1,7 @@
 package com.dnd12.meetinginvitation.user.entity;
 
 import com.dnd12.meetinginvitation.attendence.entity.Attendance;
+import com.dnd12.meetinginvitation.invitation.entity.Invitation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -41,7 +42,6 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // 초대장의 참석 여부 목록
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Attendance> attendances = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
+    private List<Invitation> createdInvitations;
 }

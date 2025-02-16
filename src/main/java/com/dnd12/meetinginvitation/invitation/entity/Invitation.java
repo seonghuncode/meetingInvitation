@@ -1,5 +1,6 @@
 package com.dnd12.meetinginvitation.invitation.entity;
 
+import com.dnd12.meetinginvitation.attendence.entity.Attendance;
 import com.dnd12.meetinginvitation.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,6 +24,9 @@ public class Invitation {
 
     @OneToMany(mappedBy = "invitation", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<InvitationParticipant> participants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "invitation", cascade = CascadeType.REMOVE)
+    private List<Attendance> attendances = new ArrayList<>();
 
 
     @ManyToOne
