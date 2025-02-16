@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,14 +27,27 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/sign-up", "/login", "/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/response", "/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+         feature/login_attendance_response
+                        .requestMatchers("/", "/sign-up", "/login", "/error", "/kakao_login", "/oauth2/authorization/kakao","/attendance/response", "/attendance/login", "/attendance/nonUser/response",  "/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+         develop
                         .anyRequest().authenticated())
 
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,redisTemplate),
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, redisTemplate),
                         UsernamePasswordAuthenticationFilter.class)
 
                 .oauth2Login(oAuth -> oAuth
-                        .loginPage("/oauth2/authorization/kakao"));
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization"))
+                        .successHandler(((request, response, authentication) -> {
+                            String registrationId = ((OAuth2AuthenticationToken) authentication)
+                                    .getAuthorizedClientRegistrationId();
+
+                            if ("kakao-attendance".equals(registrationId)) {
+                                response.sendRedirect("/attendance/login");
+                            } else {
+                                response.sendRedirect("/kakao_login");
+                            }
+                        })));
 
         return http.build();
     }

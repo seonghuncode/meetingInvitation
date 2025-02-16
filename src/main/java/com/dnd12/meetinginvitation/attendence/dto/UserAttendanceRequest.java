@@ -1,14 +1,12 @@
 package com.dnd12.meetinginvitation.attendence.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-public class AttendanceRequest {
-
+public class UserAttendanceRequest {
     private Long invitationId;
+    private Long userId;
     private String state;
     private String name;
-    private String password;
     private String message;
 }
