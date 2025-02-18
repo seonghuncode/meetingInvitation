@@ -29,6 +29,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,11 +80,15 @@ public class InvitationService {
             //전달 받은 배경(Base64로 인코딩된 이미지 파일을 디코딩 해서 특정 경로에 저장 후 해당 url저장)
             String fileUrl = "/getInvitationImage?fileName=" + fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
 
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formatterDateTime = now.format(formatter);
+
             //초대장 생성
             Invitation invitation = Invitation.builder()
                     .user(user)
-                    .createdAt(invitationDto.getCreated_at())
-                    .updatedAt(invitationDto.getUpdated_at())
+                    .createdAt(now)
+                    .updatedAt(now)
                     .place(invitationDto.getPlace())
                     .detailAddress(invitationDto.getDetail_address())
                     .date(invitationDto.getDate())
@@ -319,7 +324,7 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     if (invitationDto.getTitle() != null) {
         invitation.setTitle(invitationDto.getTitle());
     }
-
+    //초대장 업데이트 날짜 갱신
     invitation.setUpdatedAt(LocalDateTime.now());
 
     invitationRepository.save(invitation);

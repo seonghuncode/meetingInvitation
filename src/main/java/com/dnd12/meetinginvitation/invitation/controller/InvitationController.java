@@ -63,7 +63,7 @@ public class InvitationController {
     }
 
     //생성한 초대장 전체 조회(페이징)
-    @Operation(summary = "생성한 초대장 초회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
+    @Operation(summary = "생성한 초대장 조회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
     @RequestMapping(value = "/creatorInvitations", method = RequestMethod.GET)
     public ResponseEntity<ResponseDto> getCreatorInvitations(
             @RequestParam("userId") Long userId,
