@@ -8,7 +8,6 @@ import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
 import com.dnd12.meetinginvitation.invitation.repository.*;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -212,30 +211,35 @@ public class InvitationService {
     //특정 초대장 조회
     public ResponseEntity<ResponseDto> getSpecificInvitation(Long invitationId){
         //Invitation invitation = invitationRepository.findInvitationById(invitationId);
-        Invitation invitation = invitationRepository.findById(invitationId)
-                .orElseThrow(() -> new EntityNotFoundException("Invitation not found with id: " + invitationId));
+        //Invitation invitation = invitationRepository.findById(invitationId)
+        //        .orElseThrow(() -> new EntityNotFoundException("Invitation not found with id: " + invitationId));
 
+        Invitation invitation = invitationRepository.findInvitationById(invitationId);
         List<InvitationDto> invitationList = new ArrayList<>();
 
-        invitationList.add(new InvitationDto(
-                invitation.getUser().getId(),
-                invitation.getId(),
-                invitation.getCreatedAt(),
-                invitation.getUpdatedAt(),
-                invitation.getOrganizerName(),
-                invitation.getPlace(),
-                invitation.getDetailAddress(),
-                invitation.getDate(),
-                invitation.getMaxAttendences(),
-                invitation.getDescription(),
-                invitation.getState(),
-                invitation.getLink(),
-                invitation.getTitle(),
-                invitation.getFont().getFontName(),
-                invitation.getSticker().getStickerName(),
-                invitation.getBackgroundUrl(),
-                invitation.getTheme().getThemeName()
-        ));
+        InvitationDto dto = new InvitationDto();
+        dto.setCreator_id(invitation.getUser().getId());
+        dto.setInvitationId(invitation.getId());
+        dto.setCreated_at(invitation.getCreatedAt());
+        dto.setUpdated_at(invitation.getUpdatedAt());
+        dto.setPlace(invitation.getPlace());
+        dto.setDetail_address(invitation.getDetailAddress());
+        dto.setDescription(invitation.getDescription());
+        dto.setDate(invitation.getDate());
+        dto.setMax_attendances(invitation.getMaxAttendences());
+        dto.setState(invitation.getState());
+        dto.setLink(invitation.getLink());
+        dto.setFontName(invitation.getLink());
+        dto.setFontName(invitation.getFont().getFontName());
+        dto.setSticker(invitation.getSticker().getStickerName());
+        dto.setOrganizerName(invitation.getOrganizerName());
+        dto.setTitle(invitation.getTitle());
+        dto.setBackgroundImageData(invitation.getBackgroundUrl());
+        dto.setThemeName(invitation.getTheme().getThemeName());
+        invitationList.add(dto);
+
+
+        
         return ResponseEntity.ok(ResponseDto.success(invitationList));
     }
 
