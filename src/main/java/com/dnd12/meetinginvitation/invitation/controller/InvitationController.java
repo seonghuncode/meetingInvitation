@@ -51,6 +51,13 @@ public class InvitationController {
         return invitationService.makeSticker(stickerName);
     }
 
+    //편지지 종류 추가
+    @Operation(summary = "편지지 종류 추가", description = "")
+    @RequestMapping(value = "/theme", method = RequestMethod.POST)
+    public ResponseEntity<ResponseDto>  makeTheme(@RequestParam("themeName") String themeName){
+        return invitationService.makeTheme(themeName);
+    }
+
     //초대장 전체 조회(페이징) (Form-Data)
     @Operation(summary = "초대장 전체 조회", description = "EX) page=0(첫 번째 페이지), size=10(한 페이지에 10개씩), sort=desc(최신순 정렬)")
     @RequestMapping(value = "/invitations", method = RequestMethod.GET)

@@ -3,17 +3,12 @@ package com.dnd12.meetinginvitation.invitation.service;
 
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
-import com.dnd12.meetinginvitation.invitation.entity.Font;
-import com.dnd12.meetinginvitation.invitation.entity.Invitation;
-import com.dnd12.meetinginvitation.invitation.entity.InvitationParticipant;
-import com.dnd12.meetinginvitation.invitation.entity.Sticker;
+import com.dnd12.meetinginvitation.invitation.entity.*;
 import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
-import com.dnd12.meetinginvitation.invitation.repository.FontRepository;
-import com.dnd12.meetinginvitation.invitation.repository.InvitationParticipantRepository;
-import com.dnd12.meetinginvitation.invitation.repository.InvitationRepository;
-import com.dnd12.meetinginvitation.invitation.repository.StickerRepository;
+import com.dnd12.meetinginvitation.invitation.repository.*;
 import com.dnd12.meetinginvitation.user.entity.User;
 import com.dnd12.meetinginvitation.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -51,6 +46,8 @@ public class InvitationService {
     private FontRepository fontRepository;
     @Autowired
     private StickerRepository stickerRepository;
+    @Autowired
+    private ThemeRepository themeRepository;
 
     //초대장 생성
     @Transactional
@@ -77,6 +74,20 @@ public class InvitationService {
             Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
                     .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
+
+
+            //전달 받은 편지지 이름으로 편지지 종류 조회(1. 빈문자열 또는 null일 경우)
+            if (invitationDto.getThemeName() == null || invitationDto.getThemeName().trim().isEmpty() && invitationDto.getThemeName().trim().equals("")) {
+                invitationDto.setThemeName(null);
+                Optional<Theme> theme = themeRepository.findByThemeName(invitationDto.getThemeName());
+                if(theme.isEmpty()){
+                    makeTheme(null);
+                }
+            }
+            //전달 받은 편지지 종류 확인
+            Theme theme = themeRepository.findByThemeName(invitationDto.getThemeName())
+                    .orElseThrow(() -> new RuntimeException("Fail: themeName not found with name: " + invitationDto.getThemeName()));
+
             //전달 받은 배경(Base64로 인코딩된 이미지 파일을 디코딩 해서 특정 경로에 저장 후 해당 url저장)
             String fileUrl = "/getInvitationImage?fileName=" + fileStorageService.saveBase64File(invitationDto.getBackgroundImageData());
 
@@ -89,6 +100,7 @@ public class InvitationService {
                     .user(user)
                     .createdAt(now)
                     .updatedAt(now)
+                    .organizerName(invitationDto.getOrganizerName())
                     .place(invitationDto.getPlace())
                     .detailAddress(invitationDto.getDetail_address())
                     .date(invitationDto.getDate())
@@ -99,6 +111,7 @@ public class InvitationService {
                     .title(invitationDto.getTitle())
                     .font(font)
                     .sticker(sticker)
+                    .theme(theme)
                     .backgroundUrl(fileUrl)
                     .build();
 
@@ -160,6 +173,22 @@ public class InvitationService {
         }
     }
 
+    //편지지 종류 생성
+    @Transactional
+    public ResponseEntity<ResponseDto> makeTheme(String themeName) {
+        try {
+            Theme theme = new Theme();
+            theme.setThemeName(themeName);
+            themeRepository.save(theme);
+            return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
+        } catch (Exception e) {
+            // 예외 발생 시 롤백 수행
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseDto.fail(e.getMessage()));
+        }
+    }
+
 
     //초대장 전체 조회
     @Transactional(readOnly = true)
@@ -182,7 +211,10 @@ public class InvitationService {
 
     //특정 초대장 조회
     public ResponseEntity<ResponseDto> getSpecificInvitation(Long invitationId){
-        Invitation invitation = invitationRepository.findByid(invitationId);
+        //Invitation invitation = invitationRepository.findInvitationById(invitationId);
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new EntityNotFoundException("Invitation not found with id: " + invitationId));
+
         List<InvitationDto> invitationList = new ArrayList<>();
 
         invitationList.add(new InvitationDto(
@@ -190,6 +222,7 @@ public class InvitationService {
                 invitation.getId(),
                 invitation.getCreatedAt(),
                 invitation.getUpdatedAt(),
+                invitation.getOrganizerName(),
                 invitation.getPlace(),
                 invitation.getDetailAddress(),
                 invitation.getDate(),
@@ -200,7 +233,8 @@ public class InvitationService {
                 invitation.getTitle(),
                 invitation.getFont().getFontName(),
                 invitation.getSticker().getStickerName(),
-                invitation.getBackgroundUrl()
+                invitation.getBackgroundUrl(),
+                invitation.getTheme().getThemeName()
         ));
         return ResponseEntity.ok(ResponseDto.success(invitationList));
     }
@@ -251,10 +285,12 @@ public class InvitationService {
                         invitation.getState(),
                         invitation.getLink(),
                         invitationParticipant.getInvitationType(),
-                        invitation.getTitle(),
                         invitation.getFont().getFontName(),
                         invitation.getSticker().getStickerName(),
-                        invitation.getBackgroundUrl()
+                        invitation.getTitle(),
+                        invitation.getBackgroundUrl(),
+                        invitation.getOrganizerName(),
+                        invitation.getTheme().getThemeName()
                 ));
 
             }
@@ -312,10 +348,22 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     Font font = fontRepository.findByFontName(invitationDto.getFontName())
             .orElseThrow(() -> new RuntimeException("Fail: font not found with name: " + invitationDto.getFontName()));
 
-    //전달 받은 스티커 이름으로 스티커 조회
+    //전달 받은 스티커 이름으로 스티커 조회(1. 빈문자열 또는 null일 경우)
+    if (invitationDto.getSticker() == null || invitationDto.getSticker().trim().isEmpty() && invitationDto.getSticker().trim().equals("")) {
+        invitationDto.setSticker(null);
+        Optional<Sticker> sticker = stickerRepository.findByStickerName(invitationDto.getSticker());
+        if(sticker.isEmpty()){
+            makeSticker(null);
+        }
+    }
+    //전달 받은 sticker이름 확인
     Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
             .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
+    /*//전달 받은 스티커 이름으로 스티커 조회
+    Sticker sticker = stickerRepository.findByStickerName(invitationDto.getSticker())
+            .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
+*/
     invitation.setFont(font);
 
     invitation.setSticker(sticker);
