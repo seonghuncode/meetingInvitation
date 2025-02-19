@@ -1,11 +1,13 @@
 package com.dnd12.meetinginvitation.conf;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
+@Slf4j
 public class WebConfig implements WebMvcConfigurer {
 
     private final String UPLOAD_DIR;
@@ -26,17 +28,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(UPLOAD_DIR);
     }
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") //모든 경로에 대해 CORS를 적용
-                .allowedOrigins(
-                        "https://43.202.1.235:8999", // 서버 배포 시 해당 도메인으로 변경 필요
-                        "http://localhost:3000", // 프론트 서버 배포 후 수정
-                        "https://localhost:8443"
-                )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type")
-                .allowCredentials(true) //인증 정보 허용
-                .maxAge(3600); //preflight 캐시 시간 (1시간)
-    }
+//    @Override
+//    public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedOrigins("http://localhost:3000","https://localhost:8443")  // 프론트엔드 origin만 설정
+//                .allowedMethods("*")
+//                .allowedHeaders("*")
+//                .exposedHeaders("*")
+//                .exposedHeaders("Set-Cookie","*")    // 중요: 쿠키 헤더 노출
+//                .allowCredentials(true)
+//                .maxAge(3600);
+//    }
 }

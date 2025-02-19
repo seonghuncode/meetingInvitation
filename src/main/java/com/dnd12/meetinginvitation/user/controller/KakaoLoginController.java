@@ -8,6 +8,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,8 @@ import java.net.URLEncoder;
 @Slf4j
 public class KakaoLoginController {
 
+    @Value("${frontend.url}")
+    private String frontendUrl;
     private final KakaoLoginService kakaoLoginService;
 
 //    @GetMapping("/kakao_login")
@@ -35,9 +38,9 @@ public class KakaoLoginController {
             String encodedName = URLEncoder.encode(loginResponse.getName(), "UTF-8");
 
             //쿠키 생성
-            Cookie accessTokenCookie = new Cookie("AccessToken", loginResponse.getAccessToken());
-            accessTokenCookie.setHttpOnly(true); //JavaScript에서 접근 불가능하게 설정
-            accessTokenCookie.setSecure(false); //HTTPS에서만 전송
+            Cookie accessTokenCookie = new Cookie("token", loginResponse.getAccessToken());
+            accessTokenCookie.setHttpOnly(true);
+            accessTokenCookie.setSecure(true); //HTTPS에서만 전송
             accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
             accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
 
@@ -45,7 +48,8 @@ public class KakaoLoginController {
             response.addCookie(accessTokenCookie);
 
             String redirectUrl = String.format(
-                    "http://localhost:3000/auth/kakao?userId=%s&name=%s&profileImageUrl=%s&email=%s",
+                    "%s/auth/kakao?userId=%s&name=%s&profileImageUrl=%s&email=%s",
+                    frontendUrl,
                     loginResponse.getUserId(),
                     encodedName,
                     loginResponse.getProfileImageUrl(),
@@ -54,7 +58,7 @@ public class KakaoLoginController {
 
             response.sendRedirect(redirectUrl);
         } catch (IOException e) {
-            log.error("Redirect failed: ",e);
+            log.error("Redirect failed: ", e);
         }
     }
 

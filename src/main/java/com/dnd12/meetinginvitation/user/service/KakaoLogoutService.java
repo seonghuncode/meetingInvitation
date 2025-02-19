@@ -32,11 +32,11 @@ public class KakaoLogoutService {
         invalidateToken(token);
 
         // 쿠키의 액세스 토큰 삭제
-        Cookie cookie = new Cookie("AccessToken", null);
+        Cookie cookie = new Cookie("token", null);
         cookie.setMaxAge(0);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setSecure(false);
+        cookie.setSecure(true);
         response.addCookie(cookie);
 
         // 카카오 소셜 로그인 accessToken 삭제
