@@ -37,7 +37,7 @@ public class Invitation {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;
-
+    private String organizerName;
     private String place;
     private String detailAddress;
     private LocalDateTime date;
@@ -67,6 +67,11 @@ public class Invitation {
 //    @OneToOne
 //    @JoinColumn(name = "template_id", nullable = false)
 //    private Background background;
+
+    // 편지지 종류
+    @ManyToOne
+    @JoinColumn(name = "theme_id", nullable = true)
+    private Theme theme;
 
     private String backgroundUrl;
 }
