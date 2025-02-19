@@ -15,7 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,14 +30,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         Cookie[] cookies = request.getCookies();
 
+
+
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("AccessToken".equals(cookie.getName())) {
+                if ("token".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
             }
+        } else {
+            log.info("No cookies found in request");
         }
+
+        log.info("token 확인!!!!{}", token);
+
 //        String token = resolveToken(request);
 
         if (token != null) {

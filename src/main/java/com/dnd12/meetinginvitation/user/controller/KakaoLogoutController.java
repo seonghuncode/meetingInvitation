@@ -22,7 +22,7 @@ public class KakaoLogoutController {
 
     @PostMapping("/auth/logout")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response,
-                                                    @CookieValue(name="AccessToken",
+                                                    @CookieValue(name="token",
                                                             required = false) String accessToken) {
         try {
             kakaoLogoutService.logout(response, accessToken);
