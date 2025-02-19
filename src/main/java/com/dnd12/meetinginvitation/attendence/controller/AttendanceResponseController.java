@@ -13,11 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.batch.BatchTaskExecutor;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +31,19 @@ public class AttendanceResponseController {
     private String frontendUrl;
     private final AttendanceService attendanceService;
     private final KakaoLoginService kakaoLoginService;
+
+    private void setTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from("token", token)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(Duration.ofHours(1))
+                .build();
+
+        response.setHeader("Set-Cookie", cookie.toString());
+        log.info("Setting cookie: {}", cookie.toString());
+    }
 
     //비회원 로그인 후 응답
     @PostMapping("/nonUser/response")
@@ -51,14 +66,23 @@ public class AttendanceResponseController {
             String encodedName = URLEncoder.encode(loginResponse.getName(), "UTF-8");
 
             //쿠키 생성
-            Cookie accessTokenCookie = new Cookie("token", loginResponse.getAccessToken());
-            accessTokenCookie.setHttpOnly(true);
-            accessTokenCookie.setSecure(true); //HTTPS에서만 전송
-            accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
-            accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
+            setTokenCookie(response, loginResponse.getAccessToken());
 
-            //응답에 쿠키 추가
-            response.addCookie(accessTokenCookie);
+//            Cookie accessTokenCookie = new Cookie("token", loginResponse.getAccessToken());
+//            accessTokenCookie.setHttpOnly(true);
+//            accessTokenCookie.setSecure(true); //HTTPS에서만 전송
+//            accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
+//            accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
+//
+//            String sameSite = "None";
+//            String cookieValue = String.format("%s; SameSite=%s", accessTokenCookie.toString(), sameSite);
+//            response.setHeader("Set-Cookie", cookieValue);
+//
+//            // 디버깅용 로그
+//            log.info("Attendance Setting cookie with SameSite=None: {}", cookieValue);
+//
+//            //응답에 쿠키 추가
+//            response.addCookie(accessTokenCookie);
 
             String redirectUrl = String.format(
                     "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s",
