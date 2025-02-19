@@ -44,6 +44,13 @@ public class KakaoLoginController {
             accessTokenCookie.setPath("/"); //모든 경로에서 접근 가능
             accessTokenCookie.setMaxAge(3600); // 쿠키 유효시간 설정(1시간)
 
+            String sameSite = "None";
+            String cookieValue = String.format("%s; SameSite=%s", accessTokenCookie.toString(), sameSite);
+            response.setHeader("Set-Cookie", cookieValue);
+
+            // 디버깅용 로그
+            log.info("KakaoLogin Setting cookie with SameSite=None: {}", cookieValue);
+
             //응답에 쿠키 추가
             response.addCookie(accessTokenCookie);
 
