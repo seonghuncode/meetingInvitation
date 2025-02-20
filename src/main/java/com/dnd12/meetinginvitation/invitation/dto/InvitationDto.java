@@ -53,6 +53,7 @@ public class InvitationDto {
     private String backgroundImageData;
     private String organizerName;
     private String themeName;
+    private String basicBackgroundType;
 
 
 
