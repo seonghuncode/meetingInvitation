@@ -1,6 +1,9 @@
 package com.dnd12.meetinginvitation.invitation.service;
 
 
+import com.dnd12.meetinginvitation.attendence.dto.AttendanceResponseDto;
+import com.dnd12.meetinginvitation.attendence.entity.Attendance;
+import com.dnd12.meetinginvitation.attendence.repository.AttendanceRepository;
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.entity.*;
@@ -47,6 +50,8 @@ public class InvitationService {
     private StickerRepository stickerRepository;
     @Autowired
     private ThemeRepository themeRepository;
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     //초대장 생성
     @Transactional
@@ -208,6 +213,28 @@ public class InvitationService {
     public ResponseEntity<ResponseDto> getInvitedInvitationAllList(Long userId, int page, int size, String sort) {
         return getInvitationListByParam(userId, page, size, sort, "INVITED");
     }
+
+
+
+    // 날자의 경우 초대장 갱신 날짜를 반환하기 때문에 응답 갱신 날짜를 반환하도록 수정 필요
+    //특정 초대장 응답 리스트
+    public ResponseEntity<ResponseDto> getInvitationResponseList(Long invitationId){
+        Invitation invitation = invitationRepository.findInvitationById(invitationId);
+        List<Attendance> attendances = attendanceRepository.findByInvitationId(invitationId);
+
+        List<AttendanceResponseDto> dtoList = new ArrayList<>();
+        for(Attendance attendace : attendances){
+            AttendanceResponseDto dto = new AttendanceResponseDto();
+            dto.setInvitationId(attendace.getInvitation().getId());
+            dto.setUserId(attendace.getUser().getId());
+            dto.setName(attendace.getName());
+            dto.setState(attendace.getState());
+            dto.setWriteDate(invitation.getUpdatedAt());
+            dtoList.add(dto);
+        }
+        return ResponseEntity.ok(ResponseDto.success(dtoList));
+    }
+
 
     //특정 초대장 조회
     public ResponseEntity<ResponseDto> getSpecificInvitation(Long invitationId){

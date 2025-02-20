@@ -134,12 +134,18 @@ public class InvitationController {
     }
 
     //초대장 삭제 (Form-Data)
+    @Operation(summary = "초대장 삭제", description = "")
     @DeleteMapping(value = "/invitation/{invitationId}")
     public ResponseEntity<ResponseDto> deleteInvitation(@PathVariable("invitationId") Long invitationId){
         return invitationService.deleteInvitation(invitationId);
     }
 
-
+    //초대장 관리에 응답 현황
+    @Operation(summary = "초대장 관리 응답 현황", description = "")
+    @RequestMapping(value = "/getInvitationResponseList", method = RequestMethod.GET)
+    public ResponseEntity<ResponseDto> getInvitationResponseList( @RequestParam("invitationId") Long invitationId){
+        return invitationService.getInvitationResponseList(invitationId);
+    }
 
 
 
