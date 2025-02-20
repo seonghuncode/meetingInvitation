@@ -74,4 +74,6 @@ public class Invitation {
     private Theme theme;
 
     private String backgroundUrl;
+
+    private String basicBackgroundType;
 }

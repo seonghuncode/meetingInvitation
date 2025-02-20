@@ -238,8 +238,6 @@ public class InvitationService {
         dto.setThemeName(invitation.getTheme().getThemeName());
         invitationList.add(dto);
 
-
-        
         return ResponseEntity.ok(ResponseDto.success(invitationList));
     }
 
