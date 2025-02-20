@@ -1,6 +1,9 @@
 package com.dnd12.meetinginvitation.invitation.service;
 
 
+import com.dnd12.meetinginvitation.attendence.dto.AttendanceResponseDto;
+import com.dnd12.meetinginvitation.attendence.entity.Attendance;
+import com.dnd12.meetinginvitation.attendence.repository.AttendanceRepository;
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.entity.*;
@@ -47,6 +50,8 @@ public class InvitationService {
     private StickerRepository stickerRepository;
     @Autowired
     private ThemeRepository themeRepository;
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     //초대장 생성
     @Transactional
@@ -111,6 +116,7 @@ public class InvitationService {
                     .font(font)
                     .sticker(sticker)
                     .theme(theme)
+                    .basicBackgroundType(invitationDto.getBasicBackgroundType())
                     .backgroundUrl(fileUrl)
                     .build();
 
@@ -208,6 +214,28 @@ public class InvitationService {
         return getInvitationListByParam(userId, page, size, sort, "INVITED");
     }
 
+
+
+    // 날자의 경우 초대장 갱신 날짜를 반환하기 때문에 응답 갱신 날짜를 반환하도록 수정 필요
+    //특정 초대장 응답 리스트
+    public ResponseEntity<ResponseDto> getInvitationResponseList(Long invitationId){
+        Invitation invitation = invitationRepository.findInvitationById(invitationId);
+        List<Attendance> attendances = attendanceRepository.findByInvitationId(invitationId);
+
+        List<AttendanceResponseDto> dtoList = new ArrayList<>();
+        for(Attendance attendace : attendances){
+            AttendanceResponseDto dto = new AttendanceResponseDto();
+            dto.setInvitationId(attendace.getInvitation().getId());
+            dto.setUserId(attendace.getUser().getId());
+            dto.setName(attendace.getName());
+            dto.setState(attendace.getState());
+            dto.setWriteDate(invitation.getUpdatedAt());
+            dtoList.add(dto);
+        }
+        return ResponseEntity.ok(ResponseDto.success(dtoList));
+    }
+
+
     //특정 초대장 조회
     public ResponseEntity<ResponseDto> getSpecificInvitation(Long invitationId){
         //Invitation invitation = invitationRepository.findInvitationById(invitationId);
@@ -274,26 +302,49 @@ public class InvitationService {
                 //특정사용자, 현재 초대장에 대한 invitationType조회
                 InvitationParticipant invitationParticipant = invitationParticipantRepository.findByInvitationIdAndUserId(invitation.getId(), userId);
 
-                invitationList.add(new InvitationDto(
-                        invitation.getUser().getId(),
-                        invitation.getId(),
-                        invitation.getCreatedAt(),
-                        invitation.getUpdatedAt(),
-                        invitation.getPlace(),
-                        invitation.getDetailAddress(),
-                        invitation.getDate(),
-                        invitation.getMaxAttendences(),
-                        invitation.getDescription(),
-                        invitation.getState(),
-                        invitation.getLink(),
-                        invitationParticipant.getInvitationType(),
-                        invitation.getFont().getFontName(),
-                        invitation.getSticker().getStickerName(),
-                        invitation.getTitle(),
-                        invitation.getBackgroundUrl(),
-                        invitation.getOrganizerName(),
-                        invitation.getTheme().getThemeName()
-                ));
+                InvitationDto dto = new InvitationDto();
+                dto.setCreator_id(invitation.getUser().getId());
+                dto.setInvitationId(invitation.getId());
+                dto.setCreated_at(invitation.getCreatedAt());
+                dto.setUpdated_at(invitation.getUpdatedAt());
+                dto.setPlace(invitation.getPlace());
+                dto.setDetail_address(invitation.getDetailAddress());
+                dto.setDescription(invitation.getDescription());
+                dto.setDate(invitation.getDate());
+                dto.setMax_attendances(invitation.getMaxAttendences());
+                dto.setState(invitation.getState());
+                dto.setLink(invitation.getLink());
+                dto.setFontName(invitation.getLink());
+                dto.setFontName(invitation.getFont().getFontName());
+                dto.setSticker(invitation.getSticker().getStickerName());
+                dto.setOrganizerName(invitation.getOrganizerName());
+                dto.setTitle(invitation.getTitle());
+                dto.setBackgroundImageData(invitation.getBackgroundUrl());
+                dto.setThemeName(invitation.getTheme().getThemeName());
+                dto.setInvitationType(invitationParticipant.getInvitationType());
+                dto.setThemeName( invitation.getTheme().getThemeName());
+                invitationList.add(dto);
+
+//                invitationList.add(new InvitationDto(
+//                        invitation.getUser().getId(),
+//                        invitation.getId(),
+//                        invitation.getCreatedAt(),
+//                        invitation.getUpdatedAt(),
+//                        invitation.getPlace(),
+//                        invitation.getDetailAddress(),
+//                        invitation.getDate(),
+//                        invitation.getMaxAttendences(),
+//                        invitation.getDescription(),
+//                        invitation.getState(),
+//                        invitation.getLink(),
+//                        invitationParticipant.getInvitationType(),
+//                        invitation.getFont().getFontName(),
+//                        invitation.getSticker().getStickerName(),
+//                        invitation.getTitle(),
+//                        invitation.getBackgroundUrl(),
+//                        invitation.getOrganizerName(),
+//                        invitation.getTheme().getThemeName()
+//                ));
 
             }
             return ResponseEntity.ok(ResponseDto.success(invitationList));
@@ -337,6 +388,9 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     if (invitationDto.getLink() != null) {
         invitation.setLink(invitationDto.getLink());
     }
+
+    //기본 배경 타입 수정
+    invitation.setBasicBackgroundType(invitationDto.getBasicBackgroundType());
 
     String fileUrl = null;
     try {
