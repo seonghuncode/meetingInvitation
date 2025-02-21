@@ -33,7 +33,7 @@ public class KakaoLoginController {
                 .httpOnly(false)
                 .secure(true)
                 .sameSite("None")
-                .maxAge(Duration.ofHours(1))
+                .maxAge(Duration.ofHours(3))
                 .build();
 
         response.setHeader("Set-Cookie", cookie.toString());
