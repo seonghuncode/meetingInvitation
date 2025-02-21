@@ -1,6 +1,7 @@
 package com.dnd12.meetinginvitation.invitation.dto;
 
 
+import com.dnd12.meetinginvitation.invitation.enums.InvitationState;
 import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InvitationDto {
-    public InvitationDto(Long creatorId, Long invitationId, LocalDateTime createdAt, LocalDateTime updatedAt, String organizerName, String place, String detailAddress, LocalDateTime date, int maxAttendances, String description, String state, String link, InvitationType invitationType, String fontName, String sticker, String title, String backgroundImageData, String themeName) {
+    public InvitationDto(Long creatorId, Long invitationId, LocalDateTime createdAt, LocalDateTime updatedAt, String organizerName, String place, String detailAddress, LocalDateTime date, int maxAttendances, String description, InvitationState state, String link, InvitationType invitationType, String fontName, String sticker, String title, String backgroundImageData, String themeName, String hostProfileImageUrl) {
         this.creatorId = creatorId;
         this.invitationId = invitationId;
         this.createdAt = createdAt;
@@ -33,6 +34,7 @@ public class InvitationDto {
         this.title = title;
         this.backgroundImageData = backgroundImageData;
         this.themeName = themeName;
+        this.hostProfileImageUrl = hostProfileImageUrl;
     }
 
     private Long creatorId;
@@ -44,7 +46,7 @@ public class InvitationDto {
     private LocalDateTime date;
     private int maxAttendances;
     private String description;
-    private String state;
+    private InvitationState state;
     private String link;
     private InvitationType invitationType;
     private String fontName;
@@ -54,6 +56,7 @@ public class InvitationDto {
     private String organizerName;
     private String themeName;
     private String basicBackgroundType;
+    private String hostProfileImageUrl;
 
 
 

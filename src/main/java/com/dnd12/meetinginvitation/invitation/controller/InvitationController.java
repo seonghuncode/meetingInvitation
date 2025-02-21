@@ -40,7 +40,6 @@ public class InvitationController {
     @Operation(summary = "폰트 생성", description = "")
     @RequestMapping(value = "/font", method = RequestMethod.POST)
     public ResponseEntity<ResponseDto>  makeFont(@RequestParam("fontName") String fontName){
-
         return invitationService.makeFont(fontName);
     }
 
