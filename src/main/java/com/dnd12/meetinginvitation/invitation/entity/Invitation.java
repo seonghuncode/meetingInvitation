@@ -1,6 +1,7 @@
 package com.dnd12.meetinginvitation.invitation.entity;
 
 import com.dnd12.meetinginvitation.attendence.entity.Attendance;
+import com.dnd12.meetinginvitation.invitation.enums.InvitationState;
 import com.dnd12.meetinginvitation.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,7 +49,8 @@ public class Invitation {
     private String description;
 
     @Column(nullable = false)
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private InvitationState state; //초대 상태 (INPROGRESS, COMPLETED, CANCELED)
      
     private String link;
 

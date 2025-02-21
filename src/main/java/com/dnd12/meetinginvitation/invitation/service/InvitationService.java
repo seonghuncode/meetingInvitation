@@ -7,6 +7,7 @@ import com.dnd12.meetinginvitation.attendence.repository.AttendanceRepository;
 import com.dnd12.meetinginvitation.invitation.dto.InvitationDto;
 import com.dnd12.meetinginvitation.invitation.dto.ResponseDto;
 import com.dnd12.meetinginvitation.invitation.entity.*;
+import com.dnd12.meetinginvitation.invitation.enums.InvitationState;
 import com.dnd12.meetinginvitation.invitation.enums.InvitationType;
 import com.dnd12.meetinginvitation.invitation.repository.*;
 import com.dnd12.meetinginvitation.user.entity.User;
@@ -110,7 +111,7 @@ public class InvitationService {
                     .date(invitationDto.getDate())
                     .maxAttendences(invitationDto.getMaxAttendances())
                     .description(invitationDto.getDescription())
-                    .state(invitationDto.getState())
+                    .state(InvitationState.INPROGRESS)
                     .link(invitationDto.getLink())
                     .title(invitationDto.getTitle())
                     .font(font)
@@ -264,6 +265,7 @@ public class InvitationService {
         dto.setTitle(invitation.getTitle());
         dto.setBackgroundImageData(invitation.getBackgroundUrl());
         dto.setThemeName(invitation.getTheme().getThemeName());
+        dto.setHostProfileImageUrl(invitation.getUser().getProfileImageUrl());
         invitationList.add(dto);
 
         return ResponseEntity.ok(ResponseDto.success(invitationList));
@@ -323,6 +325,7 @@ public class InvitationService {
                 dto.setThemeName(invitation.getTheme().getThemeName());
                 dto.setInvitationType(invitationParticipant.getInvitationType());
                 dto.setThemeName( invitation.getTheme().getThemeName());
+                dto.setHostProfileImageUrl(invitation.getUser().getProfileImageUrl());
                 invitationList.add(dto);
 
 //                invitationList.add(new InvitationDto(
