@@ -40,6 +40,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/specificInvitation", "/getInvitationResponseList", "/sign-up", "/error", "/kakao_login", "/oauth2/authorization/kakao", "/attendance/response", "/attendance/login", "/attendance/nonUser/response", "/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
