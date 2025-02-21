@@ -59,8 +59,8 @@ public class InvitationService {
 
         try {
             // User 조회 (creator_id를 통해)
-            User user = userRepository.findById(invitationDto.getCreator_id())
-                    .orElseThrow(() -> new RuntimeException("Fail: user not found with id: " + invitationDto.getCreator_id()));
+            User user = userRepository.findById(invitationDto.getCreatorId())
+                    .orElseThrow(() -> new RuntimeException("Fail: user not found with id: " + invitationDto.getCreatorId()));
 
             //전달 받은 폰트 이름으로 폰트 조회
             Font font = fontRepository.findByFontName(invitationDto.getFontName())
@@ -106,9 +106,9 @@ public class InvitationService {
                     .updatedAt(now)
                     .organizerName(invitationDto.getOrganizerName())
                     .place(invitationDto.getPlace())
-                    .detailAddress(invitationDto.getDetail_address())
+                    .detailAddress(invitationDto.getDetailAddress())
                     .date(invitationDto.getDate())
-                    .maxAttendences(invitationDto.getMax_attendances())
+                    .maxAttendences(invitationDto.getMaxAttendances())
                     .description(invitationDto.getDescription())
                     .state(invitationDto.getState())
                     .link(invitationDto.getLink())
@@ -246,15 +246,15 @@ public class InvitationService {
         List<InvitationDto> invitationList = new ArrayList<>();
 
         InvitationDto dto = new InvitationDto();
-        dto.setCreator_id(invitation.getUser().getId());
+        dto.setCreatorId(invitation.getUser().getId());
         dto.setInvitationId(invitation.getId());
-        dto.setCreated_at(invitation.getCreatedAt());
-        dto.setUpdated_at(invitation.getUpdatedAt());
+        dto.setCreatedAt(invitation.getCreatedAt());
+        dto.setUpdatedAt(invitation.getUpdatedAt());
         dto.setPlace(invitation.getPlace());
-        dto.setDetail_address(invitation.getDetailAddress());
+        dto.setDetailAddress(invitation.getDetailAddress());
         dto.setDescription(invitation.getDescription());
         dto.setDate(invitation.getDate());
-        dto.setMax_attendances(invitation.getMaxAttendences());
+        dto.setMaxAttendances(invitation.getMaxAttendences());
         dto.setState(invitation.getState());
         dto.setLink(invitation.getLink());
         dto.setFontName(invitation.getLink());
@@ -303,15 +303,15 @@ public class InvitationService {
                 InvitationParticipant invitationParticipant = invitationParticipantRepository.findByInvitationIdAndUserId(invitation.getId(), userId);
 
                 InvitationDto dto = new InvitationDto();
-                dto.setCreator_id(invitation.getUser().getId());
+                dto.setCreatorId(invitation.getUser().getId());
                 dto.setInvitationId(invitation.getId());
-                dto.setCreated_at(invitation.getCreatedAt());
-                dto.setUpdated_at(invitation.getUpdatedAt());
+                dto.setCreatedAt(invitation.getCreatedAt());
+                dto.setUpdatedAt(invitation.getUpdatedAt());
                 dto.setPlace(invitation.getPlace());
-                dto.setDetail_address(invitation.getDetailAddress());
+                dto.setDetailAddress(invitation.getDetailAddress());
                 dto.setDescription(invitation.getDescription());
                 dto.setDate(invitation.getDate());
-                dto.setMax_attendances(invitation.getMaxAttendences());
+                dto.setMaxAttendances(invitation.getMaxAttendences());
                 dto.setState(invitation.getState());
                 dto.setLink(invitation.getLink());
                 dto.setFontName(invitation.getLink());
@@ -370,14 +370,14 @@ public ResponseEntity<ResponseDto> modifyInvitation(Long id, InvitationDto invit
     if (invitationDto.getPlace() != null) {
         invitation.setPlace(invitationDto.getPlace());
     }
-    if (invitationDto.getDetail_address() != null) {
-        invitation.setDetailAddress(invitationDto.getDetail_address());
+    if (invitationDto.getDetailAddress() != null) {
+        invitation.setDetailAddress(invitationDto.getDetailAddress());
     }
     if (invitationDto.getDate() != null) {
         invitation.setDate(invitationDto.getDate());
     }
     //해당 값은 수정을 안해도 기존 값 넘겨주어야 한다
-    invitation.setMaxAttendences(invitationDto.getMax_attendances());
+    invitation.setMaxAttendences(invitationDto.getMaxAttendances());
 
     if (invitationDto.getDescription() != null) {
         invitation.setDescription(invitationDto.getDescription());

@@ -14,16 +14,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InvitationDto {
-    public InvitationDto(Long creator_id, Long invitationId, LocalDateTime created_at, LocalDateTime updated_at, String organizerName, String place, String detail_address, LocalDateTime date, int max_attendances, String description, String state, String link, InvitationType invitationType, String fontName, String sticker, String title, String backgroundImageData, String themeName) {
-        this.creator_id = creator_id;
+    public InvitationDto(Long creatorId, Long invitationId, LocalDateTime createdAt, LocalDateTime updatedAt, String organizerName, String place, String detailAddress, LocalDateTime date, int maxAttendances, String description, String state, String link, InvitationType invitationType, String fontName, String sticker, String title, String backgroundImageData, String themeName) {
+        this.creatorId = creatorId;
         this.invitationId = invitationId;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
         this.organizerName = organizerName;
         this.place = place;
-        this.detail_address = detail_address;
+        this.detailAddress = detailAddress;
         this.date = date;
-        this.max_attendances = max_attendances;
+        this.maxAttendances = maxAttendances;
         this.description = description;
         this.state = state;
         this.link = link;
@@ -35,14 +35,14 @@ public class InvitationDto {
         this.themeName = themeName;
     }
 
-    private Long creator_id;
+    private Long creatorId;
     private Long invitationId;
-    private LocalDateTime created_at;
-    private LocalDateTime updated_at;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String place;
-    private String detail_address;
+    private String detailAddress;
     private LocalDateTime date;
-    private int max_attendances;
+    private int maxAttendances;
     private String description;
     private String state;
     private String link;
