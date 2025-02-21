@@ -21,7 +21,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 3; // 액세스 토큰 유효시간 1시간
+    private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 60 * 3; // 액세스 토큰 유효시간 3시간
     private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 60 * 24; //리프레시 토큰 유효시간
 
     @PostConstruct

@@ -30,7 +30,7 @@ public class KakaoLoginController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .path("/")
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(true)
                 .sameSite("None")
                 .maxAge(Duration.ofHours(1))
@@ -39,7 +39,6 @@ public class KakaoLoginController {
         response.setHeader("Set-Cookie", cookie.toString());
         log.info("Setting cookie: {}", cookie.toString());
     }
-
 
     @GetMapping("/kakao_login")
     public void kakaoLogin(@RequestParam("code") String code, HttpServletResponse response) {

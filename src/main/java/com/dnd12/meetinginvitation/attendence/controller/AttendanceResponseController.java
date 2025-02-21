@@ -35,7 +35,7 @@ public class AttendanceResponseController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("token", token)
                 .path("/")
-                .httpOnly(true)
+                .httpOnly(false)
                 .secure(true)
                 .sameSite("None")
                 .maxAge(Duration.ofHours(1))
