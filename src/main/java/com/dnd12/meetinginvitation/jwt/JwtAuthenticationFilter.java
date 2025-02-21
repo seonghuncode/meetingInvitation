@@ -27,25 +27,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         //쿠키에서 토큰 추출
-        String token = null;
-        Cookie[] cookies = request.getCookies();
+//        String token = null;
+//        Cookie[] cookies = request.getCookies();
+//
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if ("token".equals(cookie.getName())) {
+//                    token = cookie.getValue();
+//                    break;
+//                }
+//            }
+//        } else {
+//            log.info("No cookies found in request");
+//        }
+//
+//        log.info("token 확인!!!!{}", token);
 
-
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("token".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        } else {
-            log.info("No cookies found in request");
-        }
-
-        log.info("token 확인!!!!{}", token);
-
-//        String token = resolveToken(request);
+        String token = resolveToken(request);
+        log.info("JwtAuthenticationFilter token:{}", token);
 
         if (token != null) {
             //1. 레디스에서 블랙리스트 확인
@@ -75,12 +74,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     //쿠키에 액세스 토큰을 담아서 전달받으므로 삭제
-//    private String resolveToken(HttpServletRequest request) {
-//        String bearerToken = request.getHeader("Authorization");
-////        log.info("bearerToken: {}", bearerToken);
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//        return null;
-//    }
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+//        log.info("bearerToken: {}", bearerToken);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }

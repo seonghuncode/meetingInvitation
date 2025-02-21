@@ -21,11 +21,10 @@ public class KakaoLogoutController {
 
 
     @PostMapping("/auth/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response,
-                                                    @CookieValue(name="token",
-                                                            required = false) String accessToken) {
+    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Authorization") String bearerToken) {
         try {
-            kakaoLogoutService.logout(response, accessToken);
+            String token = bearerToken.substring(7);
+            kakaoLogoutService.logout(token);
 
             return ResponseEntity.ok(
                     ApiResponse.success("로그아웃이 성공적으로 처리되었습니다."));
