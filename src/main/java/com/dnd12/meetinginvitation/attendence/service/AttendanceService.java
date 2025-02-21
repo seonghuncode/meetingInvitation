@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +37,12 @@ public class AttendanceService {
         Invitation invitation = invitationRepository.findById(request.getInvitationId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid invitation ID"));
 
+        boolean check = attendanceRepository.existsByName(request.getName());
+
+        if(check){
+            throw new RuntimeException("Fail: You have already responded. [responded Name :  " + request.getName() + "]");
+        }
+
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         Attendance attendance = Attendance.builder()
@@ -46,6 +51,7 @@ public class AttendanceService {
                 .name(request.getName())
                 .password(encodedPassword)  // 암호화된 비밀번호 저장
                 .message(request.getMessage())
+                .date(LocalDateTime.now())
                 .build();
 
         attendanceRepository.save(attendance);
@@ -61,12 +67,19 @@ public class AttendanceService {
         User user = userRepository.findById(userAttendanceRequest.getUserId())
                 .orElseThrow(()-> new IllegalArgumentException("invalid user ID"));
 
+        boolean check = attendanceRepository.existsByUser_Id(userAttendanceRequest.getUserId());
+
+        if(check){
+            throw new RuntimeException("Fail: You have already responded. [responded Name :  " + userAttendanceRequest.getUserId() + "]");
+        }
+
         Attendance attendance = Attendance.builder()
                 .invitation(invitation)
                 .user(user)
                 .state(userAttendanceRequest.getState())
                 .name(userAttendanceRequest.getName())
                 .message(userAttendanceRequest.getMessage())
+                .date(LocalDateTime.now())
                 .build();
 
         //invitation_participant 테이블에 저장
