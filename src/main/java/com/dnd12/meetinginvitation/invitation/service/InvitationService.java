@@ -80,7 +80,6 @@ public class InvitationService {
                     .orElseThrow(() -> new RuntimeException("Fail: sticker not found with name: " + invitationDto.getSticker()));
 
 
-
             //전달 받은 편지지 이름으로 편지지 종류 조회(1. 빈문자열 또는 null일 경우)
             if (invitationDto.getThemeName() == null || invitationDto.getThemeName().trim().isEmpty() && invitationDto.getThemeName().trim().equals("")) {
                 invitationDto.setThemeName(null);
@@ -133,6 +132,15 @@ public class InvitationService {
                     .invitationType(InvitationType.CREATOR)
                     .date(LocalDateTime.now())
                     .build();
+
+            //초대장 생성 or 받은 초대장에 대해 동일한 사용자ID와 초대장ID가 있을 경우 유효성 검사
+            boolean isDuplicate = invitationParticipantRepository.existsByUserIdAndInvitationId(
+                    invitationDto.getCreatorId(), invitation.getId());
+
+            if (isDuplicate) {
+                throw new RuntimeException("Fail: An invitation has already been created. [ userId : " + invitationDto.getCreatorId() + ", invitationId : " + invitation.getId() + "]");
+            }
+
             //초대장 타입 저장(CREATOR)
             invitationParticipantRepository.save(creatorParticipant);
 
@@ -223,16 +231,30 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findInvitationById(invitationId);
         List<Attendance> attendances = attendanceRepository.findByInvitationId(invitationId);
 
+
         List<AttendanceResponseDto> dtoList = new ArrayList<>();
-        for(Attendance attendace : attendances){
-            List<String> messages = attendace.getMessages();
+
+        for(Attendance attendance : attendances){
             AttendanceResponseDto dto = new AttendanceResponseDto();
-            dto.setInvitationId(attendace.getInvitation().getId());
-            dto.setUserId(attendace.getUser().getId());
-            dto.setName(attendace.getName());
-            dto.setState(attendace.getState());
-            dto.setWriteDate(invitation.getUpdatedAt());
-            dto.setMessages(messages);
+
+
+            dto.setInvitationId(attendance.getInvitation().getId());
+            dto.setState(attendance.getState());
+            dto.setWriteDate(attendance.getDate());
+
+            if(attendance.getUser() == null || attendance.getUser().getId() == null){
+                dto.setUserId(null);
+            }else{
+                dto.setUserId(attendance.getUser().getId());
+            }
+
+            if(attendance.getName() == null){
+                dto.setName(null);
+            }else{
+                dto.setName(attendance.getName());
+            }
+
+
             dtoList.add(dto);
         }
         return ResponseEntity.ok(ResponseDto.success(dtoList));
@@ -329,27 +351,6 @@ public class InvitationService {
                 dto.setThemeName( invitation.getTheme().getThemeName());
                 dto.setHostProfileImageUrl(invitation.getUser().getProfileImageUrl());
                 invitationList.add(dto);
-
-//                invitationList.add(new InvitationDto(
-//                        invitation.getUser().getId(),
-//                        invitation.getId(),
-//                        invitation.getCreatedAt(),
-//                        invitation.getUpdatedAt(),
-//                        invitation.getPlace(),
-//                        invitation.getDetailAddress(),
-//                        invitation.getDate(),
-//                        invitation.getMaxAttendences(),
-//                        invitation.getDescription(),
-//                        invitation.getState(),
-//                        invitation.getLink(),
-//                        invitationParticipant.getInvitationType(),
-//                        invitation.getFont().getFontName(),
-//                        invitation.getSticker().getStickerName(),
-//                        invitation.getTitle(),
-//                        invitation.getBackgroundUrl(),
-//                        invitation.getOrganizerName(),
-//                        invitation.getTheme().getThemeName()
-//                ));
 
             }
             return ResponseEntity.ok(ResponseDto.success(invitationList));

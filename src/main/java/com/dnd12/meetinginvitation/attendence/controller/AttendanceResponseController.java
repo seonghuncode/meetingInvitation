@@ -2,17 +2,15 @@ package com.dnd12.meetinginvitation.attendence.controller;
 
 import com.dnd12.meetinginvitation.attendence.dto.AttendanceRequest;
 import com.dnd12.meetinginvitation.attendence.dto.UserAttendanceRequest;
-import com.dnd12.meetinginvitation.attendence.entity.Attendance;
 import com.dnd12.meetinginvitation.attendence.service.AttendanceService;
 import com.dnd12.meetinginvitation.common.ApiResponse;
 import com.dnd12.meetinginvitation.user.dto.LoginResponse;
 import com.dnd12.meetinginvitation.user.service.KakaoLoginService;
-import jakarta.servlet.http.Cookie;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.batch.BatchTaskExecutor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,12 +44,14 @@ public class AttendanceResponseController {
     }
 
     //비회원 로그인 후 응답
+    @Operation(summary = "비화원 로그인", description = "state : ATTENDING(참석), NOT_ATTENDING(불참), PENDING(보류/미정)")
     @PostMapping("/nonUser/response")
     public ResponseEntity<ApiResponse<Void>> AttendanceResponse(@RequestBody AttendanceRequest request) {
         attendanceService.saveAttendance(request);
         return ResponseEntity.ok(ApiResponse.success("비회원 참석자 응답 성공"));
     }
 
+    @Operation(summary = "화원 로그인", description = "state : ATTENDING(참석), NOT_ATTENDING(불참), PENDING(보류/미정)")
     @PostMapping("/user/response")
     public ResponseEntity<ApiResponse<Void>> UserAttendanceResponse(@RequestBody UserAttendanceRequest userAttendanceRequest) {
         attendanceService.saveUserAttendance(userAttendanceRequest);

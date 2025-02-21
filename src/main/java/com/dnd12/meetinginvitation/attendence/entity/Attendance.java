@@ -1,10 +1,12 @@
 package com.dnd12.meetinginvitation.attendence.entity;
 
 import com.dnd12.meetinginvitation.invitation.entity.Invitation;
+import com.dnd12.meetinginvitation.invitation.enums.AttendanceStatus;
 import com.dnd12.meetinginvitation.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +31,10 @@ public class Attendance {
     @JoinColumn(name = "user_id")
     private User user;
 
+    //ATTENDING(참석), NOT_ATTENDING(불참), PENDING(보류(미정))
     @Column(nullable = false)
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private AttendanceStatus state; // --> 참석 여부 enum type
 
     @Column(nullable = false)
     private String name;
@@ -41,14 +45,18 @@ public class Attendance {
     @ElementCollection
     private List<String> messages = new ArrayList<>();
 
+    //응답 날짜
+    private LocalDateTime date;
+
     @Builder
-    public Attendance(Invitation invitation, User user, String state, String name, String password, String message) {
+    public Attendance(Invitation invitation, User user, AttendanceStatus state, String name, String password, LocalDateTime date, String message) {
 
         this.invitation = invitation;
         this.user = user;
         this.state = state;
         this.name = name;
         this.password = password;
+        this.date = date;
         if (message != null && !message.trim().isEmpty()) {
             this.messages.add(message);
         }
