@@ -225,12 +225,14 @@ public class InvitationService {
 
         List<AttendanceResponseDto> dtoList = new ArrayList<>();
         for(Attendance attendace : attendances){
+            List<String> messages = attendace.getMessages();
             AttendanceResponseDto dto = new AttendanceResponseDto();
             dto.setInvitationId(attendace.getInvitation().getId());
             dto.setUserId(attendace.getUser().getId());
             dto.setName(attendace.getName());
             dto.setState(attendace.getState());
             dto.setWriteDate(invitation.getUpdatedAt());
+            dto.setMessages(messages);
             dtoList.add(dto);
         }
         return ResponseEntity.ok(ResponseDto.success(dtoList));
