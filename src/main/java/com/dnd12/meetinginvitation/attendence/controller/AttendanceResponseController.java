@@ -85,12 +85,13 @@ public class AttendanceResponseController {
 //            response.addCookie(accessTokenCookie);
 
             String redirectUrl = String.format(
-                    "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s",
+                    "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s&token=%s",
                     frontendUrl,
                     loginResponse.getUserId(),
                     encodedName,
                     loginResponse.getProfileImageUrl(),
-                    loginResponse.getEmail()
+                    loginResponse.getEmail(),
+                    loginResponse.getAccessToken()
             );
 
             response.sendRedirect(redirectUrl);
