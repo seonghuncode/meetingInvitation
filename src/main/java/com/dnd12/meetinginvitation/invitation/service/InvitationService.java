@@ -124,7 +124,6 @@ public class InvitationService {
             //초대장 저장
             invitationRepository.save(invitation);
 
-
             //초대장 생성시 invitationType은 항상 CREATOR (초대장을 누군가에게 전송할 경우 INVITED로 변경해서 전송)
             InvitationParticipant creatorParticipant = InvitationParticipant.builder()
                     .invitation(invitation)
@@ -144,8 +143,9 @@ public class InvitationService {
             //초대장 타입 저장(CREATOR)
             invitationParticipantRepository.save(creatorParticipant);
 
+            Long invitationId = invitation.getId();
 
-            return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("")));
+            return ResponseEntity.ok(ResponseDto.success(Collections.singletonList("invitationId : " + invitationId)));
 
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
