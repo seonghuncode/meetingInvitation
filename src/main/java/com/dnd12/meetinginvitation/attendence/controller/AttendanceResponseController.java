@@ -36,7 +36,7 @@ public class AttendanceResponseController {
                 .httpOnly(false)
                 .secure(true)
                 .sameSite("None")
-                .maxAge(Duration.ofHours(1))
+                .maxAge(Duration.ofHours(3))
                 .build();
 
         response.setHeader("Set-Cookie", cookie.toString());
@@ -85,12 +85,13 @@ public class AttendanceResponseController {
 //            response.addCookie(accessTokenCookie);
 
             String redirectUrl = String.format(
-                    "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s",
+                    "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s&token=%s",
                     frontendUrl,
                     loginResponse.getUserId(),
                     encodedName,
                     loginResponse.getProfileImageUrl(),
-                    loginResponse.getEmail()
+                    loginResponse.getEmail(),
+                    loginResponse.getAccessToken()
             );
 
             response.sendRedirect(redirectUrl);

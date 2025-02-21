@@ -233,6 +233,7 @@ public class InvitationService {
 
 
         List<AttendanceResponseDto> dtoList = new ArrayList<>();
+
         for(Attendance attendance : attendances){
             AttendanceResponseDto dto = new AttendanceResponseDto();
 
@@ -252,6 +253,8 @@ public class InvitationService {
             }else{
                 dto.setName(attendance.getName());
             }
+
+
             dtoList.add(dto);
         }
         return ResponseEntity.ok(ResponseDto.success(dtoList));

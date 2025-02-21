@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -42,6 +43,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //        }
 //
 //        log.info("token 확인!!!!{}", token);
+
+        log.info("Request URI: {}", request.getRequestURI());
+        log.info("All Headers: {}", Collections.list(request.getHeaderNames())
+                .stream()
+                .collect(Collectors.toMap(
+                        header -> header,
+                        header -> request.getHeader(header)
+                )));
 
         String token = resolveToken(request);
         log.info("JwtAuthenticationFilter token:{}", token);
@@ -76,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     //쿠키에 액세스 토큰을 담아서 전달받으므로 삭제
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-//        log.info("bearerToken: {}", bearerToken);
+        log.info("bearerToken: {}", bearerToken);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
