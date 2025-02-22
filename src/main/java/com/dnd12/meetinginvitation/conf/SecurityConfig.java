@@ -96,9 +96,6 @@ public class SecurityConfig {
         configuration.setExposedHeaders(Arrays.asList("Set-Cookie"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-
-        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
