@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -84,15 +85,18 @@ public class AttendanceResponseController {
 //            //응답에 쿠키 추가
 //            response.addCookie(accessTokenCookie);
 
-            String redirectUrl = String.format(
-                    "%s/invitation/answer?userId=%s&name=%s&profileImageUrl=%s&email=%s&token=%s",
-                    frontendUrl,
-                    loginResponse.getUserId(),
-                    encodedName,
-                    loginResponse.getProfileImageUrl(),
-                    loginResponse.getEmail(),
-                    loginResponse.getAccessToken()
-            );
+            String redirectUrl = UriComponentsBuilder
+                    .fromUriString(frontendUrl)
+                    .path("invitation/answer")
+                    .queryParam("userId", loginResponse.getUserId())
+                    .queryParam("name", encodedName)
+                    .queryParam("profileImageUrl", loginResponse.getProfileImageUrl())
+                    .queryParam("email", loginResponse.getEmail())
+                    .queryParam("token", loginResponse.getAccessToken())
+                    .build()
+                    .toUriString();
+
+            log.info("redirectUrl:{}",redirectUrl);
 
             response.sendRedirect(redirectUrl);
         } catch (IOException e) {

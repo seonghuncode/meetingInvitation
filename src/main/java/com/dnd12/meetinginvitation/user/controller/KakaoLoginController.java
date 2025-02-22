@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -57,15 +58,16 @@ public class KakaoLoginController {
 //            response.addCookie(accessTokenCookie);
             setTokenCookie(response, loginResponse.getAccessToken());
 
-            String redirectUrl = String.format(
-                    "%s/auth/kakao?userId=%s&name=%s&profileImageUrl=%s&email=%s&token=%s",
-                    frontendUrl,
-                    loginResponse.getUserId(),
-                    encodedName,
-                    loginResponse.getProfileImageUrl(),
-                    loginResponse.getEmail(),
-                    loginResponse.getAccessToken()
-            );
+            String redirectUrl = UriComponentsBuilder
+                    .fromUriString(frontendUrl)
+                    .path("auth/kakao")
+                    .queryParam("userId", loginResponse.getUserId())
+                    .queryParam("name", encodedName)
+                    .queryParam("profileImageUrl", loginResponse.getProfileImageUrl())
+                    .queryParam("email", loginResponse.getEmail())
+                    .queryParam("token", loginResponse.getAccessToken())
+                    .build()
+                    .toUriString();
 
             response.sendRedirect(redirectUrl);
         } catch (IOException e) {
