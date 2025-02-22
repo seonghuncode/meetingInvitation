@@ -80,7 +80,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 구체적인 origin 설정
         configuration.setAllowedOrigins(Arrays.asList(
-                frontendUrl
+                frontendUrl,
+                "https://localhost:3000"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "FETCH"));
         configuration.setAllowedHeaders(Arrays.asList(
