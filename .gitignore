@@ -53,6 +53,7 @@ build
 .env
 *.env
 
+
 #AWS관련 보안 파일
 .aws/
 *.pem
